@@ -1,12 +1,500 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Hunter Brewer's Portfolio</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunter Brewer - Software Developer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {}
+            }
+        }
+    </script>
+
+    <style>
+        /* Tailwind-like utilities */
+        .bg-gray-900 { background-color: #111827; }
+        .text-white { color: #ffffff; }
+        .text-gray-300 { color: #d1d5db; }
+        .text-gray-400 { color: #9ca3af; }
+        .text-gray-500 { color: #6b7280; }
+        .text-indigo-400 { color: #818cf8; }
+        .text-indigo-500 { color: #6366f1; }
+        .text-purple-400 { color: #a78bfa; }
+        .text-cyan-400 { color: #22d3ee; }
+        .bg-indigo-500 { background-color: #6366f1; }
+        .bg-purple-600 { background-color: #9333ea; }
+        .border-gray-600 { border-color: #4b5563; }
+        .border-gray-400 { border-color: #9ca3af; }
+        
+        /* Layout utilities */
+        .container { max-width: 1200px; margin: 0 auto; }
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .hidden { display: none; }
+        .fixed { position: fixed; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+        .top-0 { top: 0; }
+        .bottom-8 { bottom: 2rem; }
+        .left-1\/2 { left: 50%; }
+        .w-full { width: 100%; }
+        .w-6 { width: 1.5rem; }
+        .h-6 { height: 1.5rem; }
+        .h-12 { height: 3rem; }
+        .min-h-screen { min-height: 100vh; }
+        .max-w-4xl { max-width: 56rem; }
+        .max-w-6xl { max-width: 72rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+        .p-8 { padding: 2rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mb-12 { margin-bottom: 3rem; }
+        .mb-16 { margin-bottom: 4rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .gap-8 { gap: 2rem; }
+        .space-x-8 > * + * { margin-left: 2rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+        
+        /* Typography */
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+        .text-5xl { font-size: 3rem; line-height: 1; }
+        .text-7xl { font-size: 4.5rem; line-height: 1; }
+        .text-8xl { font-size: 6rem; line-height: 1; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .font-bold { font-weight: 700; }
+        .font-black { font-weight: 900; }
+        .font-semibold { font-weight: 600; }
+        .font-light { font-weight: 300; }
+        .font-medium { font-weight: 500; }
+        .leading-tight { line-height: 1.25; }
+        .leading-relaxed { line-height: 1.625; }
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        
+        /* Flexbox */
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .flex-col { flex-direction: column; }
+        .flex-wrap { flex-wrap: wrap; }
+        
+        /* Grid */
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        
+        /* Borders */
+        .border-2 { border-width: 2px; }
+        .border-l-4 { border-left-width: 4px; }
+        .border-indigo-500 { border-color: #6366f1; }
+        .rounded-full { border-radius: 9999px; }
+        .rounded-2xl { border-radius: 1rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        
+        /* Spacing */
+        .pl-4 { padding-left: 1rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-8 { padding-left: 2rem; padding-right: 2rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        
+        /* Transforms */
+        .transform { transform: var(--tw-transform); }
+        .-translate-x-1\/2 { --tw-translate-x: -50%; transform: translateX(-50%); }
+        .-translate-y-1 { transform: translateY(-0.25rem); }
+        .-translate-y-2 { transform: translateY(-0.5rem); }
+        
+        /* Transitions */
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .transition-colors { transition-property: color, background-color, border-color; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .duration-300 { transition-duration: 300ms; }
+        
+        /* Hover states */
+        .hover\:text-white:hover { color: #ffffff; }
+        .hover\:text-indigo-400:hover { color: #818cf8; }
+        .hover\:border-gray-400:hover { border-color: #9ca3af; }
+        .hover\:from-indigo-600:hover { --tw-gradient-from: #4f46e5; }
+        .hover\:to-purple-700:hover { --tw-gradient-to: #7c3aed; }
+        .hover\:-translate-y-1:hover { transform: translateY(-0.25rem); }
+        .hover\:-translate-y-2:hover { transform: translateY(-0.5rem); }
+        
+        /* Z-index */
+        .z-50 { z-index: 50; }
+        
+        /* Overflow */
+        .overflow-hidden { overflow: hidden; }
+        .overflow-x-hidden { overflow-x: hidden; }
+        
+        /* Pointer events */
+        .pointer-events-none { pointer-events: none; }
+        
+        /* Opacity */
+        .opacity-50 { opacity: 0.5; }
+        
+        /* Animations */
+        .animate-bounce { animation: bounce 1s infinite; }
+        .animate-fade-in-up { animation: fadeInUp 1s ease-out forwards; }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+            50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+        }
+        
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive */
+        @media (min-width: 768px) {
+            .md\:flex { display: flex; }
+            .md\:hidden { display: none; }
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .md\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+            .md\:text-5xl { font-size: 3rem; line-height: 1; }
+            .md\:text-7xl { font-size: 4.5rem; line-height: 1; }
+        }
+        
+        @media (min-width: 1024px) {
+            .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .lg\:text-8xl { font-size: 6rem; line-height: 1; }
+        }
+        
+        @media (min-width: 640px) {
+            .sm\:flex-row { flex-direction: row; }
+        }
+        
+        /* Custom styles */
+        .bg-animated {
+            background: radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+            animation: pulse 4s ease-in-out infinite alternate;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .text-gradient-hero {
+            background: linear-gradient(45deg, #fff, #8b5cf6, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .skill-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        /* Gradient buttons */
+        .bg-gradient-to-r {
+            background-image: linear-gradient(to right, var(--tw-gradient-stops));
+        }
+        
+        .from-indigo-500 {
+            --tw-gradient-from: #6366f1;
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(99, 102, 241, 0));
+        }
+        
+        .to-purple-600 {
+            --tw-gradient-to: #9333ea;
+        }
+        
+        /* Tag styles */
+        .bg-indigo-500\/20 { background-color: rgba(99, 102, 241, 0.2); }
+        .bg-purple-500\/20 { background-color: rgba(147, 51, 234, 0.2); }
+        .bg-cyan-500\/20 { background-color: rgba(6, 182, 212, 0.2); }
+        .bg-gray-800\/50 { background-color: rgba(31, 41, 55, 0.5); }
+        .bg-gray-900\/50 { background-color: rgba(17, 24, 39, 0.5); }
+        
+        .text-indigo-300 { color: #a5b4fc; }
+        .text-purple-300 { color: #c4b5fd; }
+        .text-cyan-300 { color: #67e8f9; }
+        
+        .border-indigo-500\/30 { border-color: rgba(99, 102, 241, 0.3); }
+        .border-purple-500\/30 { border-color: rgba(147, 51, 234, 0.3); }
+        .border-cyan-500\/30 { border-color: rgba(6, 182, 212, 0.3); }
+        
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    </style>
 </head>
-<body>
-  <h1>Hunter Brewer's Portfolio is Live</h1>
-  <p>More coming soon.</p>
+<body class="bg-gray-900 text-white overflow-x-hidden">
+    <!-- Animated Background -->
+    <div class="fixed inset-0 bg-animated opacity-50 pointer-events-none"></div>
+    
+    <!-- Header -->
+    <header class="fixed top-0 w-full z-50 glass transition-all duration-300">
+        <nav class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-gradient">HB</div>
+            <ul class="hidden md:flex space-x-8">
+                <li><a href="#home" class="nav-link relative text-gray-300 hover:text-indigo-400 transition-colors duration-300">Home</a></li>
+                <li><a href="#about" class="nav-link relative text-gray-300 hover:text-indigo-400 transition-colors duration-300">About</a></li>
+                <li><a href="#skills" class="nav-link relative text-gray-300 hover:text-indigo-400 transition-colors duration-300">Skills</a></li>
+                <li><a href="#projects" class="nav-link relative text-gray-300 hover:text-indigo-400 transition-colors duration-300">Projects</a></li>
+                <li><a href="#contact" class="nav-link relative text-gray-300 hover:text-indigo-400 transition-colors duration-300">Contact</a></li>
+            </ul>
+            <button class="md:hidden text-gray-300 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center text-center px-6 relative">
+        <div class="max-w-4xl mx-auto animate-fade-in-up">
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black mb-6 text-gradient-hero leading-tight">
+                Hunter Brewer
+            </h1>
+            <div class="text-2xl md:text-3xl font-light text-gray-300 mb-4">
+                Software Developer
+            </div>
+            <div class="text-lg md:text-xl text-indigo-400 mb-8 font-medium">
+                Saint Louis University
+            </div>
+            <p class="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+                I craft digital experiences through clean code and innovative solutions. Passionate about creating scalable applications that make a difference.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#projects" class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/25">
+                    View My Work
+                </a>
+                <a href="#contact" class="border-2 border-gray-600 hover:border-gray-400 text-gray-300 hover:text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 hover:bg-gray-800/50">
+                    Get In Touch
+                </a>
+            </div>
+        </div>
+        
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-gray-500 animate-bounce">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl md:text-5xl font-bold mb-8 text-gradient">About Me</h2>
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6 text-left">
+                    <p class="text-lg text-gray-300 leading-relaxed">
+                        I'm a passionate software developer studying at Saint Louis University, where I'm honing my skills in computer science and software engineering. I love solving complex problems and building applications that make a real impact.
+                    </p>
+                    <p class="text-lg text-gray-300 leading-relaxed">
+                        My journey in tech started with curiosity about how things work, and has evolved into a deep passion for creating efficient, scalable solutions. I'm always eager to learn new technologies and take on challenging projects.
+                    </p>
+                    <div class="flex flex-wrap gap-3 mt-6">
+                        <span class="px-4 py-2 bg-indigo-500/20 text-indigo-300 rounded-full text-sm border border-indigo-500/30">Student</span>
+                        <span class="px-4 py-2 bg-purple-500/20 text-purple-300 rounded-full text-sm border border-purple-500/30">Developer</span>
+                        <span class="px-4 py-2 bg-cyan-500/20 text-cyan-300 rounded-full text-sm border border-cyan-500/30">Problem Solver</span>
+                    </div>
+                </div>
+                <div class="glass rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold mb-6 text-gradient">Education</h3>
+                    <div class="space-y-4">
+                        <div class="border-l-4 border-indigo-500 pl-4">
+                            <h4 class="font-semibold text-white">Saint Louis University</h4>
+                            <p class="text-gray-400">Computer Science</p>
+                            <p class="text-sm text-gray-500">Current</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="py-20 px-6 bg-gray-900/50">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-16 text-gradient">What I Do</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Frontend Card -->
+                <div class="skill-card glass rounded-2xl p-8 hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+                    <div class="mb-6">
+                        <svg class="w-12 h-12 text-indigo-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-indigo-400">Frontend Development</h3>
+                    <p class="text-gray-300 mb-6 leading-relaxed">
+                        Creating responsive, interactive user interfaces with modern frameworks and libraries.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg text-sm border border-indigo-500/30">React</span>
+                        <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg text-sm border border-indigo-500/30">Vue.js</span>
+                        <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg text-sm border border-indigo-500/30">TypeScript</span>
+                        <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg text-sm border border-indigo-500/30">Tailwind CSS</span>
+                    </div>
+                </div>
+
+                <!-- Backend Card -->
+                <div class="skill-card glass rounded-2xl p-8 hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+                    <div class="mb-6">
+                        <svg class="w-12 h-12 text-purple-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-purple-400">Backend Development</h3>
+                    <p class="text-gray-300 mb-6 leading-relaxed">
+                        Building robust server-side applications and APIs with scalable architectures.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-sm border border-purple-500/30">Node.js</span>
+                        <span class="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-sm border border-purple-500/30">Python</span>
+                        <span class="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-sm border border-purple-500/30">PostgreSQL</span>
+                        <span class="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-sm border border-purple-500/30">MongoDB</span>
+                    </div>
+                </div>
+
+                <!-- Cloud & DevOps Card -->
+                <div class="skill-card glass rounded-2xl p-8 hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+                    <div class="mb-6">
+                        <svg class="w-12 h-12 text-cyan-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-cyan-400">Cloud & DevOps</h3>
+                    <p class="text-gray-300 mb-6 leading-relaxed">
+                        Deploying and managing applications in cloud environments with CI/CD pipelines.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-lg text-sm border border-cyan-500/30">AWS</span>
+                        <span class="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-lg text-sm border border-cyan-500/30">Docker</span>
+                        <span class="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-lg text-sm border border-cyan-500/30">GitHub Actions</span>
+                        <span class="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-lg text-sm border border-cyan-500/30">Kubernetes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl md:text-5xl font-bold mb-8 text-gradient">Let's Build Something Amazing</h2>
+            <p class="text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+                I'm always interested in new opportunities and collaborations. Whether you have a project in mind or just want to connect, feel free to reach out!
+            </p>
+            <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                <a href="mailto:hunter@example.com" class="flex items-center justify-center gap-3 glass rounded-full px-8 py-4 text-gray-300 hover:text-white hover:bg-gray-800/50 transition-all duration-300 hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    Email
+                </a>
+                <a href="https://linkedin.com/in/hunterbrewer" class="flex items-center justify-center gap-3 glass rounded-full px-8 py-4 text-gray-300 hover:text-white hover:bg-gray-800/50 transition-all duration-300 hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                    LinkedIn
+                </a>
+                <a href="https://github.com/hunterbrewer" class="flex items-center justify-center gap-3 glass rounded-full px-8 py-4 text-gray-300 hover:text-white hover:bg-gray-800/50 transition-all duration-300 hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 100) {
+                header.classList.add('backdrop-blur-xl');
+                header.style.background = 'rgba(17, 24, 39, 0.95)';
+            } else {
+                header.classList.remove('backdrop-blur-xl');
+                header.style.background = 'rgba(17, 24, 39, 0.8)';
+            }
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeInUp 0.8s ease-out forwards';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.skill-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
 </body>
 </html>
-
