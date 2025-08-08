@@ -59,7 +59,7 @@ body {
 .hero {
     height: 100vh;
     background: linear-gradient(rgba(45, 80, 22, 0.7), rgba(74, 124, 36, 0.7)),
-                url('photos/hero.jpg') center/cover;
+                url('/portfolio-site/Lawncare-Mockup/photos/hero.jpg') center/cover;
     display: flex;
     align-items: center;
     justify-content: center;
