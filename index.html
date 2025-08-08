@@ -3,93 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hunter Brewer - Software Developer</title>
-    <script src="https://cdn.tailwindcss.com" defer></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {}
-            }
-        }
-    </script>
-    <link rel="stylesheet" href="index.css">
+    <title>Hunter Brewer - Computer Science Student</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-900 text-white overflow-x-hidden">
-    <!-- Animated Background -->
-    <div class="fixed inset-0 bg-animated opacity-50 pointer-events-none"></div>
-
-    <!-- Header -->
-    <header class="fixed top-0 w-full z-50 glass transition-all duration-300">
-        <nav class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="text-2xl font-bold text-gradient">HB</div>
-            <ul class="hidden md:flex space-x-8">
-                <li><a href="#home" class="nav-link relative text-gray-300 hover:text-indigo-400 transition-colors duration-300">Home</a></li>
-                <li><a href="#about" class="nav-link relative text-gray-300 hover:text-indigo-400 transition-colors duration-300">About</a></li>
-                <li><a href="#skills" class="nav-link relative text-gray-300 hover:text-indigo-400 transition-colors duration-300">Skills</a></li>
-                <li><a href="#projects" class="nav-link relative text-gray-300 hover:text-indigo-400 transition-colors duration-300">Projects</a></li>
-                <li><a href="#contact" class="nav-link relative text-gray-300 hover:text-indigo-400 transition-colors duration-300">Contact</a></li>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="#home">Hunter Brewer</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#home" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#about" class="nav-link">About</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#contact" class="nav-link">Contact</a>
+                </li>
             </ul>
-            <button class="md:hidden text-gray-300 hover:text-white">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-            </button>
-        </nav>
-    </header>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
 
     <!-- Hero Section -->
-    <section id="home" class="min-h-screen flex items-center justify-center text-center px-6 relative">
-        <div class="max-w-4xl mx-auto animate-fade-in-up">
-            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black mb-6 text-gradient-hero leading-tight">
-                Hunter Brewer
-            </h1>
-            <div class="text-2xl md:text-3xl font-light text-gray-300 mb-4">
-                Software Developer
-            </div>
-            <div class="text-lg md:text-xl text-indigo-400 mb-8 font-medium">
-                Saint Louis University
-            </div>
-            <p class="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-                I craft digital experiences through clean code and innovative solutions. Passionate about creating scalable applications that make a difference.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="#projects" class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/25">
-                    View My Work
-                </a>
-                <a href="#contact" class="border-2 border-gray-600 hover:border-gray-400 text-gray-300 hover:text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 hover:bg-gray-800/50">
-                    Get In Touch
-                </a>
-            </div>
-        </div>
-
-        <!-- Scroll Indicator -->
-        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-gray-500 animate-bounce">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-            </svg>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="py-20 px-6">
-        <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-4xl md:text-5xl font-bold mb-8 text-gradient">About Me</h2>
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div class="space-y-6 text-left">
-                   
-                    <div class="flex flex-wrap gap-3 mt-6">
-                        <span class="px-4 py-2 bg-indigo-500/20 text-indigo-300 rounded-full text-sm border border-indigo-500/30">Student</span>
-                        <span class="px-4 py-2 bg-purple-500/20 text-purple-300 rounded-full text-sm border border-purple-500/30">Developer</span>
-                        <span class="px-4 py-2 bg-cyan-500/20 text-cyan-300 rounded-full text-sm border border-cyan-500/30">Problem Solver</span>
-                    </div>
+    <section id="home" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="gradient-text">Saint Louis University</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Class of 2027 - Bachelors in Computer Science
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary">View My Work</button>
+                    <button class="btn btn-secondary">Download Resume</button>
                 </div>
-                <div class="glass rounded-2xl p-8">
-                    <h3 class="text-2xl font-bold mb-6 text-gradient">Education</h3>
-                    <div class="space-y-4">
-                        <div class="border-l-4 border-indigo-500 pl-4">
-                            <h4 class="font-semibold text-white">Saint Louis University</h4>
-                            <p class="text-gray-400">Computer Science</p>
-                            <p class="text-sm text-gray-500">Current</p>
+            </div>
+            <div class="hero-visual">
+                <div class="floating-card">
+                    <div class="code-snippet">
+                        <div class="code-header">
+                            <div class="dot red"></div>
+                            <div class="dot yellow"></div>
+                            <div class="dot green"></div>
+                        </div>
+                        <div class="code-content">
+                            <span class="code-line">const developer = {</span>
+                            <span class="code-line">  name: "Hunter Brewer",</span>
+                            <span class="code-line">  passion: "creating",</span>
+                            <span class="code-line">  status: "available"</span>
+                            <span class="code-line">};</span>
                         </div>
                     </div>
                 </div>
@@ -97,8 +68,163 @@
         </div>
     </section>
 
-    <!-- Placeholder for Skills, Projects, Contact, and Script sections -->
-    <!-- Add remaining content here -->
+    <!-- Skills Section -->
+    <section class="skills">
+        <div class="container">
+            <h2 class="section-title">Technical Skills</h2>
+            <div class="skills-grid">
+                <div class="skill-card">
+                    <div class="skill-icon">💻</div>
+                    <h3>Languages</h3>
+                    <ul>
+                        <li>Python</li>
+                        <li>Java</li>
+                        <li>C++</li>
+                        <li>JavaScript</li>
+                        <li>SQL/MySQL</li>
+                    </ul>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-icon">🎨</div>
+                    <h3>Web Dev & UI/UX</h3>
+                    <ul>
+                        <li>React.js</li>
+                        <li>Tailwind CSS</li>
+                        <li>Flask</li>
+                        <li>Figma</li>
+                    </ul>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-icon">🔧</div>
+                    <h3>Development & Deployment</h3>
+                    <ul>
+                        <li>Designing & Integrating REST APIs</li>
+                        <li>Deploying Services with Docker & Reverse Proxies</li>
+                        <li>Securing Networks with Tailscale & Zero Trust</li>
+                        <li>Managing ZFS Storage & System Backups</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
 
+    <!-- Projects Section -->
+    <section class="projects">
+        <div class="container">
+            <h2 class="section-title">Featured Projects</h2>
+            <div class="projects-grid">
+                <!-- First Project Card -->
+                <div class="project-card">
+                    <div class="project-image">
+                        <div class="project-overlay">
+                            <a href="lawncare.html" class="btn btn-outline">View Project</a>
+                            <button class="btn btn-outline">View Code</button>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3>Lawncare Mockup</h3>
+                        <p>Lawncare / Landscaping Website</p>
+                    </div>
+                </div>
+
+                <!-- Second Project Card -->
+                <div class="project-card">
+                    <div class="project-image">
+                        <div class="project-overlay">
+                            <button class="btn btn-outline">View Project</button>
+                            <button class="btn btn-outline">View Code</button>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3>[Project Title]</h3>
+                        <p>[Brief project description]</p>
+                        <div class="project-tags">
+                            <span class="tag">[Tech]</span>
+                            <span class="tag">[Tech]</span>
+                            <span class="tag">[Tech]</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Third Project Card -->
+                <div class="project-card">
+                    <div class="project-image">
+                        <div class="project-overlay">
+                            <button class="btn btn-outline">View Project</button>
+                            <button class="btn btn-outline">View Code</button>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3>[Project Title]</h3>
+                        <p>[Brief project description]</p>
+                        <div class="project-tags">
+                            <span class="tag">[Tech]</span>
+                            <span class="tag">[Tech]</span>
+                            <span class="tag">[Tech]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Hunter Brewer. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="https://www.linkedin.com/in/hunter-brewer"
+                       class="social-link"
+                       target="_blank">
+                       LinkedIn
+                    </a>
+                    <a href="https://github.com/hunterbrewer04"
+                       class="social-link"
+                       target="_blank">
+                       Github
+                    </a>
+                    <a href="https://twitter.com/hunterbrewer04"
+                       class="social-link"
+                       target="_blank">
+                       Twitter
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('.nav-menu');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        // Smooth scrolling for nav links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add scroll effect to navbar
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
 </body>
 </html>
