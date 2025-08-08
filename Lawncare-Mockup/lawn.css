@@ -290,6 +290,16 @@ body {
     padding: 2rem;
 }
 
+/* Mobile scroll hint - hidden by default */
+.mobile-scroll-hint {
+    display: none;
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    font-style: italic;
+}
+
 /* Animations */
 @keyframes fadeInUp {
     from {
@@ -316,13 +326,120 @@ body {
         font-size: 1.1rem;
     }
 
+    /* Show mobile scroll hints */
+    .mobile-scroll-hint {
+        display: block;
+    }
+
+    /* Mobile Services - Horizontal Scroll */
+    .services {
+        padding: 3rem 1rem;
+    }
+
     .services-grid {
-        grid-template-columns: 1fr;
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        gap: 1rem;
+        padding: 1rem 0;
+        -webkit-overflow-scrolling: touch;
+        grid-template-columns: none; /* Override desktop grid */
+        margin-top: 1rem; /* Override desktop margin */
+    }
+
+    .service-card {
+        flex: 0 0 280px;
+        scroll-snap-align: start;
+        margin-right: 1rem;
+    }
+
+    .services-grid::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .services-grid::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .services-grid::-webkit-scrollbar-thumb {
+        background: #a8d26d;
+        border-radius: 10px;
+    }
+
+    .services-grid::-webkit-scrollbar-thumb:hover {
+        background: #95c255;
+    }
+
+    /* Mobile Gallery - Horizontal Scroll */
+    .gallery {
+        padding: 3rem 1rem;
+    }
+
+    .gallery-grid {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        gap: 1rem;
+        padding: 1rem 0;
+        -webkit-overflow-scrolling: touch;
+        grid-template-columns: none; /* Override desktop grid */
+        margin-top: 1rem; /* Override desktop margin */
+    }
+
+    .gallery-item {
+        flex: 0 0 280px;
+        scroll-snap-align: start;
+        margin-right: 1rem;
+    }
+
+    .gallery-item img {
+        height: 200px;
+    }
+
+    .gallery-grid::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .gallery-grid::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .gallery-grid::-webkit-scrollbar-thumb {
+        background: #4a7c24;
+        border-radius: 10px;
+    }
+
+    .gallery-grid::-webkit-scrollbar-thumb:hover {
+        background: #2d5016;
+    }
+
+    /* Mobile Contact Info */
+    .contact {
+        padding: 3rem 1rem;
     }
 
     .contact-info {
         flex-direction: column;
         text-align: center;
+        gap: 1.5rem;
+    }
+
+    /* Mobile Hero adjustments */
+    .hero-content {
+        padding: 1rem;
+    }
+
+    .cta-button {
+        padding: 0.8rem 2rem;
+        font-size: 1rem;
+    }
+
+    /* Mobile section titles */
+    .section-title {
+        font-size: 2rem;
+        margin-bottom: 2rem;
     }
 }
 
