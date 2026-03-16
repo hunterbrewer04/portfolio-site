@@ -12,6 +12,7 @@ export interface Post {
   tags: string[];
   readingTime: string;
   content: string;
+  draft: boolean;
 }
 
 const BLOG_DIR = path.join(process.cwd(), "content/blog");
@@ -31,13 +32,11 @@ function parseMdxFile(slug: string): Post {
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
     readingTime: readingTimeText,
     content,
+    draft: Boolean(data.draft),
   };
 }
 
-/**
- * Returns all blog posts sorted by date, newest first.
- */
-export function getAllPosts(): Post[] {
+function readAllPosts(): Post[] {
   let files: string[];
   try {
     files = fs.readdirSync(BLOG_DIR);
@@ -55,6 +54,20 @@ export function getAllPosts(): Post[] {
   return posts.sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
+}
+
+/**
+ * Returns all published blog posts sorted by date, newest first.
+ */
+export function getAllPosts(): Post[] {
+  return readAllPosts().filter((post) => !post.draft);
+}
+
+/**
+ * Returns all post slugs (including drafts) for static generation.
+ */
+export function getAllSlugs(): string[] {
+  return readAllPosts().map((post) => post.slug);
 }
 
 /**

@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { getAllPosts, getPostBySlug } from "@/lib/blog";
+import { getAllSlugs, getPostBySlug } from "@/lib/blog";
 import { PostHeader } from "@/components/blog/post-header";
 import { mdxComponents } from "@/components/blog/mdx-components";
+
+export const dynamicParams = false;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  const posts = getAllPosts();
-  return posts.map((post) => ({ slug: post.slug }));
+  return getAllSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -34,6 +35,10 @@ export default async function BlogPostPage({ params }: PageProps) {
   try {
     post = getPostBySlug(slug);
   } catch {
+    notFound();
+  }
+
+  if (post.draft) {
     notFound();
   }
 
