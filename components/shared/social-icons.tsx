@@ -5,7 +5,7 @@ import { Github, Linkedin, Twitter } from "lucide-react";
 
 const socials = [
   { href: "https://github.com/hunterbrewer04", icon: Github, label: "GitHub" },
-  { href: "https://linkedin.com/in/hunterbrewer04", icon: Linkedin, label: "LinkedIn" },
+  { href: "https://www.linkedin.com/in/hunter-brewer/", icon: Linkedin, label: "LinkedIn" },
   { href: "https://x.com/hunterbrewer04", icon: Twitter, label: "X" },
 ];
 
