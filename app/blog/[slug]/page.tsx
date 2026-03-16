@@ -43,7 +43,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16">
+    <div className="mx-auto max-w-3xl px-5 sm:px-6 py-10 sm:py-16">
       <PostHeader
         title={post.title}
         date={post.date}

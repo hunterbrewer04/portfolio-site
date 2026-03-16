@@ -24,7 +24,7 @@ export function BlogCard({
       transition={{ duration: 0.2, ease: "easeOut" }}
     >
       <Link href={`/blog/${slug}`} className="group block">
-        <article className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-5 transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.05]">
+        <article className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-4 sm:p-5 transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.05]">
           {/* Meta row */}
           <div className="flex items-center gap-2 text-xs text-neutral-500 mb-3">
             <time dateTime={date}>{date}</time>

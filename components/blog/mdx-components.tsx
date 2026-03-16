@@ -8,7 +8,7 @@ import type { AnchorHTMLAttributes, HTMLAttributes } from "react";
 function H1({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h1
-      className="mt-10 mb-4 text-3xl font-bold tracking-tight text-neutral-100 leading-tight first:mt-0"
+      className="mt-10 mb-4 text-2xl sm:text-3xl font-bold tracking-tight text-neutral-100 leading-tight first:mt-0"
       {...props}
     >
       {children}
@@ -19,7 +19,7 @@ function H1({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
 function H2({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h2
-      className="mt-10 mb-3 text-2xl font-semibold tracking-tight text-neutral-100 leading-snug border-b border-neutral-800 pb-2"
+      className="mt-10 mb-3 text-xl sm:text-2xl font-semibold tracking-tight text-neutral-100 leading-snug border-b border-neutral-800 pb-2"
       {...props}
     >
       {children}
@@ -30,7 +30,7 @@ function H2({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
 function H3({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className="mt-8 mb-2 text-xl font-semibold text-neutral-200 leading-snug"
+      className="mt-8 mb-2 text-lg sm:text-xl font-semibold text-neutral-200 leading-snug"
       {...props}
     >
       {children}
@@ -71,7 +71,7 @@ function A({
 function Ul({ children, ...props }: HTMLAttributes<HTMLUListElement>) {
   return (
     <ul
-      className="my-4 ml-6 list-disc marker:text-neutral-500 space-y-1.5 text-neutral-300"
+      className="my-4 ml-4 sm:ml-6 list-disc marker:text-neutral-500 space-y-1.5 text-neutral-300"
       {...props}
     >
       {children}
@@ -82,7 +82,7 @@ function Ul({ children, ...props }: HTMLAttributes<HTMLUListElement>) {
 function Ol({ children, ...props }: HTMLAttributes<HTMLOListElement>) {
   return (
     <ol
-      className="my-4 ml-6 list-decimal marker:text-neutral-500 space-y-1.5 text-neutral-300"
+      className="my-4 ml-4 sm:ml-6 list-decimal marker:text-neutral-500 space-y-1.5 text-neutral-300"
       {...props}
     >
       {children}
@@ -126,7 +126,7 @@ function Code({ children, ...props }: HTMLAttributes<HTMLElement>) {
 function Pre({ children, ...props }: HTMLAttributes<HTMLPreElement>) {
   return (
     <pre
-      className="my-6 overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-900 p-5 text-sm leading-6 shadow-lg"
+      className="my-6 overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-900 p-3.5 sm:p-5 text-[13px] sm:text-sm leading-6 shadow-lg"
       {...props}
     >
       {children}

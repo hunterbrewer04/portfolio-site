@@ -37,7 +37,7 @@ export function PostHeader({ title, date, readingTime, tags }: PostHeaderProps) 
       {/* Title */}
       <motion.h1
         variants={slideUp}
-        className="text-3xl sm:text-4xl font-bold text-neutral-50 leading-tight tracking-tight"
+        className="text-2xl sm:text-4xl font-bold text-neutral-50 leading-tight tracking-tight"
       >
         {title}
       </motion.h1>
