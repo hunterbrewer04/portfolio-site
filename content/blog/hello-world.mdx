@@ -1,0 +1,59 @@
+---
+title: "Hello World"
+description: "Welcome to my blog — a space for thoughts on development, technology, and building things."
+date: "2026-03-16"
+tags: ["intro", "personal"]
+---
+
+## Why I Started Writing
+
+Writing is thinking made visible. I have spent years building things in silence — side projects that lived and died on localhost, ideas that never made it past a Notion page. This blog is an attempt to change that.
+
+The goal is simple: share what I learn as I learn it. No polished masterclasses, no "10 things you must know" listicles. Just honest notes from someone who enjoys making software and occasionally has something worth saying about it.
+
+## What to Expect
+
+A loose mix of topics:
+
+- Deep dives into specific tools, libraries, or language features
+- Reflections on architecture decisions I have made (good and bad)
+- Short tutorials built around real problems I have actually run into
+- Occasional thoughts on the craft of software development itself
+
+## A Quick Code Taste
+
+Here is the kind of thing you will find here. A small TypeScript utility I reached for last week — a type-safe `groupBy` that actually preserves the value type:
+
+```ts
+function groupBy<T, K extends string>(
+  items: T[],
+  keyFn: (item: T) => K
+): Record<K, T[]> {
+  return items.reduce(
+    (acc, item) => {
+      const key = keyFn(item);
+      (acc[key] ??= []).push(item);
+      return acc;
+    },
+    {} as Record<K, T[]>
+  );
+}
+
+// Usage
+const posts = [
+  { slug: "hello-world", tag: "intro" },
+  { slug: "typescript-tips", tag: "typescript" },
+  { slug: "getting-started", tag: "intro" },
+];
+
+const byTag = groupBy(posts, (p) => p.tag);
+// { intro: [...], typescript: [...] }
+```
+
+Nothing earth-shattering, but the kind of thing worth writing down so future-me does not spend another twenty minutes reinventing it.
+
+## Let's Build
+
+If any of this sounds interesting, stick around. I plan to publish regularly — no fixed cadence, just whenever I have something worth sharing.
+
+Thanks for reading.
