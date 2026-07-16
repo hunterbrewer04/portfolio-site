@@ -28,7 +28,7 @@ export function FileTree({ tree, selected, onSelect, color }: FileTreeProps) {
           type="button"
           onClick={() => onSelect("overview")}
           aria-current={overviewSelected ? "true" : undefined}
-          className="flex w-full items-center gap-2 rounded px-2 py-2 text-left transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
+          className="flex min-h-[44px] w-full items-center gap-2 rounded px-2 py-2 text-left transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 lg:min-h-0"
           style={
             overviewSelected ? { backgroundColor: `${color}1A`, color } : undefined
           }
@@ -75,7 +75,7 @@ function TreeNode({ node, selected, onSelect, color }: TreeNodeProps) {
           type="button"
           onClick={() => onSelect(node.path)}
           aria-current={isSelected ? "true" : undefined}
-          className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
+          className="flex min-h-[44px] w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 lg:min-h-0"
           style={
             isSelected ? { backgroundColor: `${color}1A`, color } : undefined
           }
@@ -98,7 +98,7 @@ function TreeNode({ node, selected, onSelect, color }: TreeNodeProps) {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-neutral-300 transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
+        className="flex min-h-[44px] w-full items-center gap-2 rounded px-2 py-1.5 text-left text-neutral-300 transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 lg:min-h-0"
       >
         {open ? (
           <SquareMinus size={14} className="shrink-0 text-neutral-500" />
