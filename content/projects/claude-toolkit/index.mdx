@@ -1,0 +1,39 @@
+---
+title: "Claude Toolkit"
+description: "A personal library of Claude Code skills, sub-agents, and a status line for daily engineering, coursework, and client work."
+summary: "17 skills and 8 specialized sub-agents built for real daily use, including a full evaluation harness that measures whether a skill's description actually triggers Claude, OOXML validators for Word documents, and a custom Agnoster-style status line. Published as a reference snapshot of one working Claude Code setup, not a plug-and-play install."
+date: 2026-07-16
+tags: ["Claude Code", "Python", "Bash", "Prompt Engineering", "Automation", "DevEx"]
+github: "https://github.com/hunterbrewer04/claude-toolkit"
+featured: false
+color: "#f59e0b"
+draft: false
+---
+
+## Overview
+
+Claude Toolkit is my personal library of extensions for Claude Code — the skills, sub-agents, and status line I actually run day to day across software projects, university coursework, and client web work. It's less a single product than a snapshot of how I've shaped the tool around my own workflow, published so the patterns are there to borrow from.
+
+## What's inside
+
+- **17 skills** — self-contained folders Claude loads on demand when a request matches their trigger description, covering everything from branching and PR review to Word document editing to grade math from a syllabus.
+- **8 sub-agents** — specialized assistants with their own model and tool access, for code review, frontend and full-stack work, refactoring, and performance profiling.
+- **A status line** — an Agnoster-inspired bash script showing user, host, git branch, model, context usage, and rate-limit percentage.
+
+## The eval harness
+
+The most substantial piece is `skill-creator`, a meta-skill for building and grading other skills. It runs a real evaluation loop: it spins up throwaway `claude -p` sessions with a candidate skill installed, fires a battery of trigger queries at each one, and scores whether the skill's description actually caused Claude to read it — a measured trigger rate, not a guess.
+
+```python
+# run_eval.py — one query, one measured outcome
+def run_single_query(query, skill_name, skill_description, timeout, project_root, model=None):
+    ...
+```
+
+Results roll up through `aggregate_benchmark.py` into pass/fail summaries across a whole test matrix, and `grade_structure.py` runs the deterministic parts of a structural rubric — line limits, naming, frontmatter shape — before a grading subagent handles the subjective parts.
+
+## Other highlights
+
+- The `docx` skill's OOXML validators walk a Word document's XML against the real ECMA-376/ISO schemas, catching broken relationship IDs and duplicate content before a document ships.
+- `sapling-ai-detector` calls a third-party AI-detection API and turns the response into a per-sentence markdown report, with cost tracking built in.
+- Every skill and sub-agent ships as plain markdown plus scripts — no framework, just files Claude reads when it needs them.
