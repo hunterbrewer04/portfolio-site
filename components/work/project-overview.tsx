@@ -20,9 +20,6 @@ export function ProjectOverview({ meta, color, children }: ProjectOverviewProps)
           <time dateTime={meta.date} className="text-xs text-neutral-500">
             {meta.date}
           </time>
-          <h2 className="text-xl font-bold tracking-tight text-neutral-100 sm:text-2xl">
-            {meta.title}
-          </h2>
           <p className="text-sm leading-relaxed text-neutral-400">
             {meta.description}
           </p>

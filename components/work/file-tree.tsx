@@ -111,6 +111,7 @@ function TreeNode({ node, selected, onSelect, color }: TreeNodeProps) {
         initial={false}
         animate={{ height: open ? "auto" : 0 }}
         transition={reduce ? { duration: 0 } : SPRING}
+        inert={open ? undefined : true}
         className="overflow-hidden"
       >
         <motion.ul

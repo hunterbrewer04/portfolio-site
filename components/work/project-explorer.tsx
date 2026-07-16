@@ -42,6 +42,18 @@ export function ProjectExplorer({
   const reduce = useReducedMotion();
   const [selected, setSelected] = useState<string>("overview");
   const [panelOpen, setPanelOpen] = useState(false);
+  // The tree panel is one shared instance: collapsed-by-state on mobile, forced
+  // visible on desktop via lg:!h-auto. `inert` must therefore only apply below
+  // the lg breakpoint, or it would disable the always-visible desktop tree.
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   // Deep-link: preselect from the URL hash on mount only, so the SSR HTML stays
   // deterministic (no hydration mismatch). Static-export safe — the hash never
@@ -49,8 +61,13 @@ export function ProjectExplorer({
   useEffect(() => {
     const hash = window.location.hash.slice(1);
     if (!hash) return;
-    const decoded = decodeURIComponent(hash);
-    if (files[decoded]) {
+    let decoded: string | null = null;
+    try {
+      decoded = decodeURIComponent(hash);
+    } catch {
+      decoded = null; // malformed hash → treat as absent
+    }
+    if (decoded !== null && files[decoded]) {
       setSelected(decoded);
     } else {
       // Stale/invalid hash → drop it, stay on Overview.
@@ -109,11 +126,14 @@ export function ProjectExplorer({
           </motion.span>
         </button>
 
-        {/* Collapsible on mobile; forced open on desktop via lg:!h-auto. */}
+        {/* Collapsible on mobile; forced open on desktop via lg:!h-auto. While
+            collapsed on mobile the tree stays mounted, so `inert` keeps its
+            buttons out of the tab order / accessibility tree. */}
         <motion.div
           initial={false}
           animate={{ height: panelOpen ? "auto" : 0 }}
           transition={reduce ? { duration: 0 } : PANEL_SPRING}
+          inert={panelOpen || isDesktop ? undefined : true}
           className="overflow-hidden lg:!h-auto"
         >
           <div className="mt-2 rounded-lg border border-white/[0.06] bg-white/[0.02] p-2 lg:mt-0 lg:border-0 lg:bg-transparent lg:p-0">
