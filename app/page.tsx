@@ -1,6 +1,5 @@
 "use client";
 
-import { Starfield } from "@/components/shared/starfield";
 import { TypingEffect } from "@/components/shared/typing-effect";
 import { SocialIcons } from "@/components/shared/social-icons";
 import { NavPill } from "@/components/shared/nav-pill";
@@ -8,7 +7,6 @@ import { NavPill } from "@/components/shared/nav-pill";
 export default function Home() {
   return (
     <>
-      <Starfield />
       <div className="flex min-h-screen flex-col items-center justify-center px-6">
         <section className="flex flex-col items-center gap-8 text-center">
           <TypingEffect
