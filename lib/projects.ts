@@ -7,7 +7,8 @@ export interface Project {
   slug: string;
   title: string;
   description: string;
-  summary?: string; // longer copy for the expanded card panel; falls back to description
+  summary?: string; // longer copy; the card panel prefers highlights, then this, then description
+  highlights: string[]; // 2-4 short bullets for the expanded card panel
   date: string; // "YYYY-MM-DD"
   year: number; // derived from date
   tags: string[]; // tech stack
@@ -18,13 +19,6 @@ export interface Project {
   cover?: string;
   content: string; // MDX body (the Overview)
   draft: boolean;
-}
-
-export interface FileNode {
-  name: string;
-  path: string; // relative to the project's files/ root, e.g. "src/index.ts"
-  type: "dir" | "file";
-  children?: FileNode[];
 }
 
 const PROJECTS_DIR = path.join(process.cwd(), "content/projects");
@@ -53,6 +47,7 @@ function parseProject(slug: string): Project {
     title: String(data.title ?? ""),
     description: String(data.description ?? ""),
     summary: data.summary != null ? String(data.summary) : undefined,
+    highlights: Array.isArray(data.highlights) ? data.highlights.map(String) : [],
     date,
     year: new Date(date).getFullYear(),
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
@@ -110,45 +105,3 @@ export function getAllProjectSlugs(): string[] {
 
 /** Cached read of a single project; throws on a missing file. */
 export const getProjectBySlug = cache((slug: string): Project => parseProject(slug));
-
-/** Recursive walk of an absolute dir, returning FileNodes. ENOENT → [] (graceful). */
-function walkFileTree(absDir: string, relPrefix: string): FileNode[] {
-  let entries: fs.Dirent[];
-  try {
-    entries = fs.readdirSync(absDir, { withFileTypes: true });
-  } catch (e: unknown) {
-    if (e instanceof Error && "code" in e && (e as NodeJS.ErrnoException).code === "ENOENT") {
-      return [];
-    }
-    throw e;
-  }
-
-  const nodes: FileNode[] = entries.map((entry) => {
-    const isDir = entry.isDirectory();
-    const relPath = relPrefix ? `${relPrefix}/${entry.name}` : entry.name;
-    const node: FileNode = {
-      name: entry.name,
-      path: relPath, // forward slashes; relPrefix is already "/"-joined
-      type: isDir ? "dir" : "file",
-    };
-    if (isDir) {
-      node.children = walkFileTree(path.join(absDir, entry.name), relPath);
-    }
-    return node;
-  });
-
-  // Dirs first, then files; both alphabetical (case-insensitive).
-  return nodes.sort((a, b) => {
-    if (a.type !== b.type) return a.type === "dir" ? -1 : 1;
-    return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-  });
-}
-
-/**
- * File tree for content/projects/<slug>/files/. Dirs first, then files, both
- * alphabetical. FileNode.path is relative to the files/ root with forward
- * slashes (e.g. "src/index.ts"). Missing files/ dir → [] (graceful).
- */
-export function getProjectFileTree(slug: string): FileNode[] {
-  return walkFileTree(path.join(PROJECTS_DIR, slug, "files"), "");
-}

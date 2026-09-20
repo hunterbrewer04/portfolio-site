@@ -127,3 +127,57 @@
     @apply font-sans;
   }
 }
+/* Project card border beam: a bright arc in the project color that travels
+   around the card outline while the card is hovered or expanded. The angle is
+   a registered property so the conic gradient can animate. */
+@property --beam-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.card-beam::before {
+  content: "";
+  position: absolute;
+  inset: 0; /* the card clips to its padding box, so the ring lives just inside the border */
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--beam-angle),
+    transparent 0deg,
+    var(--beam-color) 70deg,
+    #fff 90deg,
+    var(--beam-color) 110deg,
+    transparent 180deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  animation: beam-spin 2.4s linear infinite;
+  animation-play-state: paused;
+  pointer-events: none;
+}
+
+.card-beam[data-lit="true"]::before {
+  opacity: 1;
+  animation-play-state: running;
+}
+
+@keyframes beam-spin {
+  to {
+    --beam-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-beam::before {
+    animation: none;
+  }
+}
