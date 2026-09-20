@@ -15,7 +15,7 @@ export default function WorkPage() {
   const projects = getAllProjects().map(({ content, ...rest }) => rest);
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-10 sm:px-6 sm:py-16">
+    <div className="mx-auto max-w-4xl px-5 py-10 sm:px-6 sm:py-16">
       <ScrollFadeIn
         direction="up"
         className="mb-12 flex flex-col items-center gap-6 sm:gap-10"

@@ -3,12 +3,16 @@
 import { useId, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
-import { Badge } from "@/components/ui/badge";
-import { ChevronDown, Github, ExternalLink } from "lucide-react";
+import { ArrowUpRight, Github, ExternalLink } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Project } from "@/lib/projects";
 
 export interface ProjectCardProps {
   project: Omit<Project, "content">;
+  /** 1-based position in the list, rendered as the index. */
+  index: number;
+  /** hero = full-width row; featured = emphasized tile; compact = plain tile */
+  variant?: "hero" | "featured" | "compact";
   expanded: boolean;
   onToggle: () => void;
   particleCount?: number;
@@ -25,17 +29,22 @@ interface Particle {
 
 export function ProjectCard({
   project,
+  index,
+  variant = "compact",
   expanded,
   onToggle,
   particleCount = 16,
 }: ProjectCardProps) {
-  const { title, description, summary, tags, github, demo, slug, color, cover } =
+  const { title, description, summary, highlights, github, demo, slug, color, year } =
     project;
+  const hero = variant === "hero";
+  const featured = hero || variant === "featured";
   const reduce = useReducedMotion();
   const [particles, setParticles] = useState<Particle[]>([]);
   const [isHovered, setIsHovered] = useState(false);
   const panelId = useId();
   const titleId = useId();
+  const lit = isHovered || expanded;
 
   const burst = () => {
     if (reduce) return;
@@ -58,6 +67,13 @@ export function ProjectCard({
     burst();
   };
 
+  const pill =
+    "inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-xs transition-colors";
+  const outlined = cn(
+    pill,
+    "border border-white/10 text-neutral-300 hover:border-white/25 hover:text-white",
+  );
+
   return (
     <motion.article
       onClick={onCardClick}
@@ -69,15 +85,27 @@ export function ProjectCard({
         setIsHovered(false);
         setParticles([]);
       }}
-      whileHover={reduce ? undefined : { y: -4 }}
+      whileHover={reduce ? undefined : { y: -3 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="group relative cursor-pointer overflow-hidden rounded-lg border border-white/[0.06] bg-white/[0.03] p-4 transition-all duration-300 hover:bg-white/[0.05] sm:p-5"
+      data-lit={lit}
+      className="card-beam group relative h-full cursor-pointer overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] transition-colors duration-300"
       style={{
         // React drops undefined style props → the class border shows through.
-        borderColor: isHovered ? `${color}66` : undefined,
-        boxShadow: isHovered && !reduce ? `0 0 40px ${color}22` : "none",
+        borderColor: lit ? `${color}40` : undefined,
+        boxShadow: lit && !reduce ? `0 0 60px ${color}1f` : "none",
+        ["--beam-color" as string]: color,
       }}
     >
+      {/* corner glow in the project color; brightens when lit */}
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute rounded-full blur-3xl transition-opacity duration-500",
+          hero ? "-top-32 -right-24 h-80 w-80" : "-top-24 -right-20 h-56 w-56",
+        )}
+        style={{ backgroundColor: color, opacity: lit ? 0.22 : featured ? 0.14 : 0.08 }}
+      />
+
       {/* top accent bar (decorative) */}
       <motion.div
         aria-hidden
@@ -88,7 +116,7 @@ export function ProjectCard({
         transition={{ duration: reduce ? 0 : 0.35 }}
       />
 
-      {/* particle burst layer (ParticleCard mechanics) */}
+      {/* particle burst layer */}
       <AnimatePresence>
         {particles.map((p) => {
           const rad = (p.angle * Math.PI) / 180;
@@ -118,18 +146,36 @@ export function ProjectCard({
         })}
       </AnimatePresence>
 
-      <div className="relative z-10">
-        {cover && (
-          // eslint-disable-next-line @next/next/no-img-element -- static export requires a plain img, not the optimized component
-          <img
-            src={cover}
-            alt=""
-            loading="lazy"
-            className="mb-3 aspect-video w-full max-w-full rounded-md border border-white/[0.08] object-cover"
-          />
+      {/* index and arrow pin to the corners; everything else is centered */}
+      <span
+        aria-hidden
+        className={cn(
+          "absolute z-10 font-mono tabular-nums",
+          hero ? "top-6 left-6 text-sm sm:top-8 sm:left-8" : "top-5 left-5 text-xs sm:top-6 sm:left-6",
         )}
+        style={{ color }}
+      >
+        {String(index).padStart(2, "0")}
+      </span>
+      <motion.span
+        aria-hidden
+        className={cn(
+          "absolute z-10 text-neutral-600 transition-colors group-hover:text-neutral-300",
+          hero ? "top-6 right-6 sm:top-8 sm:right-8" : "top-5 right-5 sm:top-6 sm:right-6",
+        )}
+        animate={{ rotate: expanded ? 90 : 0 }}
+        transition={{ duration: reduce ? 0 : 0.3 }}
+      >
+        <ArrowUpRight size={hero ? 22 : 18} strokeWidth={1.5} />
+      </motion.span>
 
-        {/* semantic toggle: native button on the title row — Enter/Space for free */}
+      <div
+        className={cn(
+          "relative z-10 flex flex-col items-center text-center",
+          hero ? "px-10 py-8 sm:px-16 sm:py-10" : "px-8 py-6 sm:px-10 sm:py-8",
+        )}
+      >
+        {/* semantic toggle: native button on the title */}
         <button
           type="button"
           aria-expanded={expanded}
@@ -138,46 +184,38 @@ export function ProjectCard({
             onToggle();
             burst();
           }}
-          className="mb-2 flex w-full items-start justify-between gap-3 rounded text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
+          className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
         >
           <h2
             id={titleId}
-            className="text-base font-medium leading-snug text-neutral-200 transition-colors group-hover:text-white"
+            className={cn(
+              "font-semibold tracking-tight text-neutral-100 transition-colors group-hover:text-white",
+              hero
+                ? "text-2xl sm:text-3xl"
+                : featured
+                  ? "text-xl sm:text-2xl"
+                  : "text-lg sm:text-xl",
+            )}
           >
             {title}
           </h2>
-          <motion.span
-            aria-hidden
-            animate={{ rotate: expanded ? 180 : 0 }}
-            transition={{ duration: reduce ? 0 : 0.3 }}
-          >
-            <ChevronDown
-              size={16}
-              className="mt-0.5 shrink-0 text-neutral-600 transition-colors group-hover:text-neutral-300"
-            />
-          </motion.span>
         </button>
 
-        <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-neutral-500">
+        <p
+          className={cn(
+            "mt-3 leading-relaxed text-neutral-400",
+            hero ? "max-w-2xl text-base" : "max-w-md text-sm",
+            !hero && (featured ? "line-clamp-3" : "line-clamp-2"),
+          )}
+        >
           {description}
         </p>
 
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {tags.map((t) => (
-              <Badge
-                key={t}
-                variant="secondary"
-                className="border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 text-[11px] text-neutral-400"
-              >
-                {t}
-              </Badge>
-            ))}
-          </div>
-        )}
+        <p className="mt-4 font-mono text-xs" style={{ color }}>
+          {year}
+        </p>
 
-        {/* click-to-expand reveal — panel STAYS MOUNTED (aria-controls id always
-            resolves; `inert` blocks tabbing into hidden links, React 19) */}
+        {/* click-to-expand panel — stays mounted; `inert` blocks tabbing while hidden */}
         <motion.div
           id={panelId}
           aria-labelledby={titleId}
@@ -185,49 +223,71 @@ export function ProjectCard({
           initial={false}
           animate={
             expanded
-              ? { opacity: 1, height: "auto", marginTop: 16 }
+              ? { opacity: 1, height: "auto", marginTop: 20 }
               : { opacity: 0, height: 0, marginTop: 0 }
           }
           transition={{ duration: reduce ? 0 : 0.4, ease: "easeInOut" }}
-          className="overflow-hidden"
+          className="w-full overflow-hidden"
         >
           <div
-            className="border-t pt-4 text-sm leading-relaxed text-neutral-300"
+            className="flex flex-col items-center gap-5 border-t pt-5"
             style={{ borderColor: `${color}33` }}
           >
-            {summary ?? description}
-          </div>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Link
-              href={`/work/${slug}`}
-              aria-label={`View ${title} project`}
-              className="rounded-lg px-4 py-2 text-xs font-semibold text-white"
-              style={{ backgroundColor: color }}
-            >
-              View project →
-            </Link>
-            {github && (
-              <a
-                href={github}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`${title} source on GitHub`}
-                className="inline-flex items-center gap-1 py-2 text-xs text-neutral-400 hover:text-neutral-200"
+            {highlights.length > 0 ? (
+              <ul
+                className={cn(
+                  "flex w-full flex-col gap-2 text-left text-sm leading-relaxed text-neutral-300",
+                  hero ? "max-w-xl" : "max-w-md",
+                )}
               >
-                <Github size={14} /> Source
-              </a>
+                {highlights.map((h) => (
+                  <li key={h} className="flex gap-3">
+                    <span
+                      aria-hidden
+                      className="mt-[0.6em] h-1.5 w-1.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: color }}
+                    />
+                    <span>{h}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className={cn("text-sm leading-relaxed text-neutral-300", hero ? "max-w-xl" : "max-w-md")}>
+                {summary ?? description}
+              </p>
             )}
-            {demo && (
-              <a
-                href={demo}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`${title} live demo`}
-                className="inline-flex items-center gap-1 py-2 text-xs text-neutral-400 hover:text-neutral-200"
+            <div className="flex flex-wrap justify-center gap-2">
+              <Link
+                href={`/work/${slug}`}
+                aria-label={`View ${title} project`}
+                className={cn(pill, "font-semibold text-black hover:opacity-90")}
+                style={{ backgroundColor: color }}
               >
-                <ExternalLink size={14} /> Live
-              </a>
-            )}
+                View project <ArrowUpRight size={14} />
+              </Link>
+              {github && (
+                <a
+                  href={github}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`${title} source on GitHub`}
+                  className={outlined}
+                >
+                  <Github size={14} /> Source
+                </a>
+              )}
+              {demo && (
+                <a
+                  href={demo}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`${title} live demo`}
+                  className={outlined}
+                >
+                  <ExternalLink size={14} /> Live
+                </a>
+              )}
+            </div>
           </div>
         </motion.div>
       </div>
