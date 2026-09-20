@@ -23,6 +23,7 @@ const HALF_H =
 const VERTEX_SHADER = `
 attribute vec4 aParams; // sizePx, drift (world units/s), twinkle phase, alpha base
 attribute float aRate;
+attribute float aTint; // 0 = cool blue-white, 1 = warm amber-white
 uniform float uTime;
 uniform vec3 uOffset;
 uniform vec2 uHalf;
@@ -36,7 +37,14 @@ uniform float uAlphaMin;
 uniform float uAlphaMax;
 uniform float uTwinkleAmp;
 uniform float uTwinkleRate;
+uniform float uTintStrength;
+uniform float uSpikeMin;
 varying float vAlpha;
+varying float vSpike;
+varying vec3 vColor;
+
+const vec3 COOL = vec3(0.78, 0.87, 1.0);
+const vec3 WARM = vec3(1.0, 0.88, 0.72);
 
 void main() {
   // mod(x, y) is x - y * floor(x / y), so negative inputs wrap into range too.
@@ -45,19 +53,34 @@ void main() {
   float d = uZNear + mod(position.z - uZNear - uOffset.z, uZRange);
   vec4 mv = modelViewMatrix * vec4(x, y, -d, 1.0);
   gl_Position = projectionMatrix * mv;
-  gl_PointSize = clamp(aParams.x * (uZRef / d), uSizeMin, uSizeMax) * uDpr;
+  float sizePx = clamp(aParams.x * (uZRef / d), uSizeMin, uSizeMax);
+  gl_PointSize = sizePx * uDpr;
   vAlpha = clamp(aParams.w + sin(uTime * uTwinkleRate * aRate + aParams.z) * uTwinkleAmp, uAlphaMin, uAlphaMax);
+  // Diffraction spikes only on stars big enough to show them.
+  vSpike = smoothstep(uSpikeMin, uSpikeMin + 4.0, sizePx);
+  vColor = mix(vec3(1.0), mix(COOL, WARM, aTint), uTintStrength);
 }
 `;
 
 const FRAGMENT_SHADER = `
 varying float vAlpha;
+varying float vSpike;
+varying vec3 vColor;
+uniform float uSpikeStrength;
 
 void main() {
-  float r = length(gl_PointCoord - 0.5);
-  float a = smoothstep(0.5, 0.35, r) * vAlpha;
+  vec2 p = gl_PointCoord - 0.5;
+  float r = length(p);
+  // Hot gaussian core with a wide, faint halo that dies before the sprite edge.
+  float core = exp(-r * r * 40.0);
+  float halo = exp(-r * r * 9.0) * 0.35 * smoothstep(0.5, 0.25, r);
+  // Four-point diffraction spikes: a tight line along each axis.
+  float spike =
+    (exp(-abs(p.x) * 14.0) * exp(-abs(p.y) * 60.0) +
+     exp(-abs(p.y) * 14.0) * exp(-abs(p.x) * 60.0)) * vSpike * uSpikeStrength;
+  float a = min(core + halo + spike, 1.0) * vAlpha;
   if (a < 0.01) discard;
-  gl_FragColor = vec4(1.0, 1.0, 1.0, a);
+  gl_FragColor = vec4(vColor, a);
 }
 `;
 
@@ -71,33 +94,42 @@ function starCount(w: number, h: number): number {
 }
 
 function buildGeometry(count: number, halfW: number, halfH: number): BufferGeometry {
-  const { zNear, zFar, sizeMinPx, sizeMaxPx, driftMin, driftMax, alphaBaseMin, alphaBaseMax } =
-    STAR_FIELD;
+  const {
+    zNear,
+    zFar,
+    sizeMinPx,
+    sizeMaxPx,
+    sizeSkew,
+    driftMin,
+    driftMax,
+    alphaBaseMin,
+    alphaBaseMax,
+  } = STAR_FIELD;
   const position = new Float32Array(count * 3);
   const params = new Float32Array(count * 4);
   const rate = new Float32Array(count);
+  const tint = new Float32Array(count);
   for (let i = 0; i < count; i++) {
     position[i * 3] = rand(-halfW, halfW);
     position[i * 3 + 1] = rand(-halfH, halfH);
     position[i * 3 + 2] = rand(zNear, zFar);
-    params[i * 4] = rand(sizeMinPx, sizeMaxPx);
+    // Skew toward small so bright, big stars are the exception.
+    params[i * 4] = sizeMinPx + (sizeMaxPx - sizeMinPx) * Math.random() ** sizeSkew;
     params[i * 4 + 1] = rand(driftMin, driftMax);
     params[i * 4 + 2] = Math.random() * Math.PI * 2;
     params[i * 4 + 3] = rand(alphaBaseMin, alphaBaseMax);
     rate[i] = rand(0.6, 1.4);
+    tint[i] = Math.random();
   }
   const geometry = new BufferGeometry();
   geometry.setAttribute("position", new BufferAttribute(position, 3));
   geometry.setAttribute("aParams", new BufferAttribute(params, 4));
   geometry.setAttribute("aRate", new BufferAttribute(rate, 1));
+  geometry.setAttribute("aTint", new BufferAttribute(tint, 1));
   return geometry;
 }
 
 function createGl(canvas: HTMLCanvasElement) {
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  const dpr = Math.min(window.devicePixelRatio, STAR_FIELD.dprCap);
-
   const renderer = new WebGLRenderer({
     canvas,
     alpha: true,
@@ -105,26 +137,26 @@ function createGl(canvas: HTMLCanvasElement) {
     powerPreference: "low-power",
   });
   renderer.setClearColor(0x000000, 0);
-  renderer.setPixelRatio(dpr);
-  renderer.setSize(w, h, false);
 
-  const camera = new PerspectiveCamera(STAR_FIELD.fov, w / h, 1, STAR_FIELD.zFar + 10);
-  const halfW = HALF_H * camera.aspect;
+  const camera = new PerspectiveCamera(STAR_FIELD.fov, 1, 1, STAR_FIELD.zFar + 10);
 
   const uniforms = {
     uTime: { value: 0 },
     uOffset: { value: new Vector3() },
-    uHalf: { value: new Vector2(halfW, HALF_H) },
+    uHalf: { value: new Vector2() },
     uZNear: { value: STAR_FIELD.zNear },
     uZRange: { value: STAR_FIELD.zFar - STAR_FIELD.zNear },
     uZRef: { value: STAR_FIELD.zRef },
-    uDpr: { value: dpr },
+    uDpr: { value: 1 },
     uSizeMin: { value: STAR_FIELD.pointSizeMinPx },
     uSizeMax: { value: STAR_FIELD.pointSizeMaxPx },
     uAlphaMin: { value: STAR_FIELD.alphaMin },
     uAlphaMax: { value: STAR_FIELD.alphaMax },
     uTwinkleAmp: { value: STAR_FIELD.twinkleAmp },
     uTwinkleRate: { value: STAR_FIELD.twinkleRate },
+    uTintStrength: { value: STAR_FIELD.tintStrength },
+    uSpikeMin: { value: STAR_FIELD.spikeMinPx },
+    uSpikeStrength: { value: STAR_FIELD.spikeStrength },
   };
   const material = new ShaderMaterial({
     uniforms,
@@ -134,18 +166,47 @@ function createGl(canvas: HTMLCanvasElement) {
     depthWrite: false,
     depthTest: false,
   });
-  const points = new Points(buildGeometry(starCount(w, h), halfW, HALF_H), material);
+  const points = new Points(new BufferGeometry(), material);
   points.frustumCulled = false;
 
   const scene = new Scene();
   scene.add(points);
 
+  // The star box width follows the aspect ratio. Regenerating the field on
+  // every resize would re-randomize it when a mobile browser toolbar collapses
+  // mid-scroll, so only rebuild when the width or the star count moves enough
+  // to matter; the shader wraps positions into the new box either way.
+  let builtW = 0;
+  let builtCount = 0;
+  function resize() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const dpr = Math.min(window.devicePixelRatio, STAR_FIELD.dprCap);
+    // setPixelRatio reallocates the drawing buffer by itself; skip it when unchanged
+    if (renderer.getPixelRatio() !== dpr) renderer.setPixelRatio(dpr);
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    const halfW = HALF_H * camera.aspect;
+    const count = starCount(w, h);
+    if (w !== builtW || Math.abs(count - builtCount) > builtCount * 0.25) {
+      const old = points.geometry;
+      points.geometry = buildGeometry(count, halfW, HALF_H);
+      old.dispose();
+      builtW = w;
+      builtCount = count;
+    }
+    uniforms.uHalf.value.set(halfW, HALF_H);
+    uniforms.uDpr.value = dpr;
+  }
+  resize();
+
   return {
     renderer,
     scene,
     camera,
-    points,
     uniforms,
+    resize,
     dispose() {
       points.geometry.dispose();
       material.dispose();
@@ -180,7 +241,6 @@ export function StarFieldGL({
       scrollFactor,
       lerpDamping,
       maxFrameDelta,
-      dprCap,
     } = STAR_FIELD;
 
     let gl: ReturnType<typeof createGl> | undefined;
@@ -192,7 +252,7 @@ export function StarFieldGL({
       props.onFail();
       return;
     }
-    const { renderer, scene, camera, points, uniforms, dispose: disposeGl } = gl;
+    const { renderer, scene, camera, uniforms, resize, dispose: disposeGl } = gl;
 
     const navOffset = new Vector3();
     const navTarget = new Vector3();
@@ -206,10 +266,10 @@ export function StarFieldGL({
 
     let rafId = 0;
     let last = 0;
-    let running = false;
     let lostCount = 0;
-    let disposed = false;
     let resizeTimer = 0;
+    const listeners = new AbortController();
+    const { signal } = listeners;
 
     function frame(now: number) {
       const dt = Math.min((now - last) / 1000, maxFrameDelta);
@@ -228,38 +288,21 @@ export function StarFieldGL({
     }
 
     function start() {
-      if (running) return;
-      running = true;
+      cancelAnimationFrame(rafId);
       last = performance.now();
       rafId = requestAnimationFrame(frame);
     }
 
     function stop() {
-      if (!running) return;
-      running = false;
       cancelAnimationFrame(rafId);
-    }
-
-    function applyResize() {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      const dpr = Math.min(window.devicePixelRatio, dprCap);
-      renderer.setPixelRatio(dpr);
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      const halfW = HALF_H * camera.aspect;
-      const old = points.geometry;
-      points.geometry = buildGeometry(starCount(w, h), halfW, HALF_H);
-      old.dispose();
-      uniforms.uHalf.value.set(halfW, HALF_H);
-      uniforms.uDpr.value = dpr;
-      if (props.reducedMotion) renderer.render(scene, camera);
     }
 
     const onResize = () => {
       window.clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(applyResize, 150);
+      resizeTimer = window.setTimeout(() => {
+        resize();
+        renderer.render(scene, camera);
+      }, 150);
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -275,39 +318,26 @@ export function StarFieldGL({
     };
 
     const onVisibility = () => {
-      if (document.hidden) {
-        stop();
-      } else {
-        start();
-      }
+      if (document.hidden) stop();
+      else start();
     };
 
     const onContextLost = (e: Event) => {
       e.preventDefault();
       stop();
       lostCount++;
-      if (lostCount >= 2) {
-        teardown();
-        props.onFail();
-      }
+      // the parent swaps to 2D; unmount cleanup disposes the GL resources
+      if (lostCount >= 2) props.onFail();
     };
 
-    const teardown = () => {
-      if (disposed) return;
-      disposed = true;
-      stop();
-      window.clearTimeout(resizeTimer);
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("scroll", onScroll);
-      document.removeEventListener("visibilitychange", onVisibility);
-      canvas.removeEventListener("webglcontextlost", onContextLost);
-      canvas.removeEventListener("webglcontextrestored", start);
-      navigateRef.current = null;
-      disposeGl();
+    const onContextRestored = () => {
+      if (props.reducedMotion) renderer.render(scene, camera);
+      else start();
     };
 
-    window.addEventListener("resize", onResize);
+    window.addEventListener("resize", onResize, { signal });
+    canvas.addEventListener("webglcontextlost", onContextLost, { signal });
+    canvas.addEventListener("webglcontextrestored", onContextRestored, { signal });
 
     if (!props.reducedMotion) {
       navigateRef.current = (next) => {
@@ -315,25 +345,32 @@ export function StarFieldGL({
         prevPathname = next;
         if (prev === null || prev === next) return;
         const dd = routeDepth(next) - routeDepth(prev);
-        const before = navTarget.clone();
-        if (dd > 0) navTarget.z += pushDistance;
-        else if (dd < 0) navTarget.z -= pushDistance;
-        else navTarget.x += slideDistance * Math.sign(navOrder(next) - navOrder(prev));
-        if (navTarget.equals(before)) return;
+        const dz = Math.sign(dd) * pushDistance;
+        // same depth slides sideways in nav order; no direction leaves any running tween alone
+        const dx = dd === 0 ? Math.sign(navOrder(next) - navOrder(prev)) * slideDistance : 0;
+        if (!dx && !dz) return;
+        navTarget.x += dx;
+        navTarget.z += dz;
         tweenStart.copy(navOffset);
         tweenT0 = performance.now();
       };
       if (window.matchMedia("(pointer: fine)").matches) {
-        window.addEventListener("pointermove", onPointerMove, { passive: true });
+        window.addEventListener("pointermove", onPointerMove, { passive: true, signal });
       }
-      window.addEventListener("scroll", onScroll, { passive: true });
-      document.addEventListener("visibilitychange", onVisibility);
-      canvas.addEventListener("webglcontextlost", onContextLost);
-      canvas.addEventListener("webglcontextrestored", start);
+      window.addEventListener("scroll", onScroll, { passive: true, signal });
+      document.addEventListener("visibilitychange", onVisibility, { signal });
+      // a hard load can land mid-page; start from that scroll rather than lerping to it
+      onScroll();
+      scrollOffset.copy(scrollTarget);
       start();
     }
 
-    return teardown;
+    return () => {
+      stop();
+      window.clearTimeout(resizeTimer);
+      listeners.abort();
+      disposeGl();
+    };
   }, []);
 
   useEffect(() => {

@@ -7,7 +7,7 @@
 export const STAR_FIELD = {
   // ~1/3 of a uniform far-plane box is on screen at once, so this is the old
   // canvas's 8000 divided by 3.
-  densityDivisor: 2700, // stars = clamp(round(w*h/densityDivisor), minStars, maxStars)
+  densityDivisor: 1300, // stars = clamp(round(w*h/densityDivisor), minStars, maxStars)
   minStars: 300,
   maxStars: 5000,
   fov: 60, // degrees, vertical
@@ -15,10 +15,13 @@ export const STAR_FIELD = {
   zFar: 200,
   zRef: 60, // depth at which sizePx renders 1:1
   boxMargin: 1.2, // x/y box = frustum extent at zFar * boxMargin
-  sizeMinPx: 0.5, // old canvas: 0.5..2px
-  sizeMaxPx: 2.0,
-  pointSizeMinPx: 0.6, // clamp after perspective scaling, before DPR
-  pointSizeMaxPx: 6,
+  // Sprite sizes. The gaussian core fills ~40% of the sprite, so these run
+  // larger than the old canvas's 1..4px solid discs.
+  sizeMinPx: 2.5,
+  sizeMaxPx: 10,
+  sizeSkew: 1.8, // Math.random() ** sizeSkew; >1 makes big stars rare
+  pointSizeMinPx: 1.5, // clamp after perspective scaling, before DPR; below ~1 far stars pop
+  pointSizeMaxPx: 16,
   driftMin: 0.25, // world units/s downward; old 3..21 px/s at zRef on a 900px viewport
   driftMax: 1.6,
   alphaBaseMin: 0.35,
@@ -27,6 +30,9 @@ export const STAR_FIELD = {
   twinkleRate: 0.8, // rad/s, times per-star aRate in [0.6, 1.4]
   alphaMin: 0.2, // old canvas clamp
   alphaMax: 0.9,
+  tintStrength: 0.6, // 0 = pure white; 1 = full cool/warm range
+  spikeMinPx: 6, // CSS px sprite size where diffraction spikes start
+  spikeStrength: 0.7,
   dprCap: 1.5,
   pushDistance: 40, // world units per route-depth step
   pushDuration: 0.8, // seconds

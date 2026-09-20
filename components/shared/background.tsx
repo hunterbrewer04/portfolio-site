@@ -9,46 +9,40 @@ const StarFieldGL = dynamic(
   { ssr: false },
 );
 
-type Snapshot = { caps: "gl" | "2d"; reducedMotion: boolean };
+type Snapshot = { gl: boolean; reducedMotion: boolean };
 
-const PENDING = { caps: "pending", reducedMotion: false } as const; // server value
+// three only ever creates webgl2 contexts, so a webgl1-only device counts as no GL.
+function hasWebGL2(): boolean {
+  try {
+    const ctx = document.createElement("canvas").getContext("webgl2");
+    if (!ctx) return false;
+    // release the probe context now instead of at GC; the renderer makes its own
+    ctx.getExtension("WEBGL_lose_context")?.loseContext();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 // Probed once on first client render; the cached object keeps a stable identity.
 let snapshot: Snapshot | null = null;
 
 function getSnapshot(): Snapshot {
-  if (snapshot) return snapshot;
-  let ok = false;
-  try {
-    const c = document.createElement("canvas");
-    ok = !!(c.getContext("webgl2") || c.getContext("webgl"));
-  } catch {
-    ok = false;
-  }
-  snapshot = {
-    caps: ok ? "gl" : "2d",
+  snapshot ??= {
+    gl: hasWebGL2(),
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   };
   return snapshot;
 }
 
 const subscribe = () => () => {};
+const getServerSnapshot = () => null;
 
 export function Background() {
-  const snap = useSyncExternalStore<Snapshot | typeof PENDING>(
-    subscribe,
-    getSnapshot,
-    () => PENDING,
-  );
+  const snap = useSyncExternalStore<Snapshot | null>(subscribe, getSnapshot, getServerSnapshot);
   const [failed, setFailed] = useState(false);
-  const mode = failed ? "2d" : snap.caps;
 
-  if (mode === "pending") return null;
-  if (mode === "2d") return <Starfield />;
-  return (
-    <StarFieldGL
-      reducedMotion={snap.reducedMotion}
-      onFail={() => setFailed(true)}
-    />
-  );
+  if (!snap) return null;
+  if (failed || !snap.gl) return <Starfield />;
+  return <StarFieldGL reducedMotion={snap.reducedMotion} onFail={() => setFailed(true)} />;
 }
