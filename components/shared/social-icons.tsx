@@ -9,13 +9,13 @@ const socials = [
   { href: "https://x.com/hunterbrewer04", icon: Twitter, label: "X" },
 ];
 
-export function SocialIcons() {
+export function SocialIcons({ delay = 2 }: { delay?: number }) {
   return (
     <motion.div
       className="flex items-center gap-5"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 2 }}
+      transition={{ duration: 0.5, delay }}
     >
       {socials.map(({ href, icon: Icon, label }) => (
         <a
