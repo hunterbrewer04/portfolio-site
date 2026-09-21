@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getAllProjectSlugs, getProjectBySlug } from "@/lib/projects";
 import { ProjectHero } from "@/components/work/project-hero";
+import { LiveDemo } from "@/components/work/live-demo";
 import { workMdxComponents } from "@/components/work/mdx-components";
 import { ScrollFadeIn } from "@/components/motion/scroll-fade-in";
 
@@ -53,6 +54,11 @@ export default async function ProjectPage({ params }: PageProps) {
       <div className="mb-14 sm:mb-20">
         <ProjectHero meta={meta} color={project.color} />
       </div>
+      {project.embed && (
+        <ScrollFadeIn direction="up" distance={16} amount={0} className="mb-14 sm:mb-20">
+          <LiveDemo src={project.embed} title={project.title} color={project.color} />
+        </ScrollFadeIn>
+      )}
       <ScrollFadeIn direction="up" distance={16} amount={0} className="mx-auto max-w-3xl">
         <MDXRemote source={project.content} components={workMdxComponents} />
       </ScrollFadeIn>

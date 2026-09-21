@@ -14,6 +14,7 @@ export interface Project {
   tags: string[]; // tech stack
   github?: string;
   demo?: string;
+  embed?: string; // URL of a live build framed on the project page, above the Overview
   featured: boolean;
   color: string; // normalized 6-digit hex, default "#6366f1"
   cover?: string;
@@ -53,6 +54,7 @@ function parseProject(slug: string): Project {
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
     github: data.github != null ? String(data.github) : undefined,
     demo: data.demo != null ? String(data.demo) : undefined,
+    embed: data.embed != null ? String(data.embed) : undefined,
     featured: Boolean(data.featured),
     color: HEX6.test(colorRaw) ? colorRaw : "#6366f1",
     cover: data.cover != null ? String(data.cover) : undefined,
