@@ -1,6 +1,7 @@
 ---
 title: "Apple Calendar MCP"
 description: "A native macOS MCP server that reads and writes Apple Calendar through EventKit, locally or over an authenticated network connection."
+tagline: "Real Apple Calendar access for AI agents, straight through EventKit."
 summary: "One small Swift binary that is both an ical terminal command and a full MCP server, giving any MCP-compatible AI app real read and write access to Apple Calendar without opening Calendar.app. It runs locally over stdio or remotely over a token-authenticated HTTP server with per-client, revocable credentials, backed by an XCTest suite that runs in CI."
 highlights:
   - "One Swift binary that works as an ical terminal command and a full MCP server"
@@ -14,27 +15,23 @@ color: "#14b8a6"
 draft: false
 ---
 
-Apple Calendar MCP is a native macOS tool that gives AI assistants real read and write access to Apple Calendar — as an `ical` terminal command and as an MCP server, from the same small Swift binary. It talks to the macOS calendar database directly through EventKit, so queries return in roughly 100 milliseconds and Calendar.app never has to be open.
+Apple Calendar MCP lets an AI assistant read and change your Apple Calendar. It is one small Swift program that works two ways: as an `ical` command you can run in the terminal, and as an MCP server that AI apps like Claude can plug into. Either way it talks to the calendar database on your Mac directly, so answers come back in about a tenth of a second, Calendar.app never has to open, and nothing leaves your machine.
 
-## Why it exists
+## What it does
 
-Most calendar integrations either scrape a web calendar or poll a remote API. This one sits on the machine that actually owns the data and exposes it two ways:
+- Ask what is on your calendar today, this week, or over the next few days, across all calendars or just one.
+- Create, update, and delete events from the terminal or from any MCP-compatible AI app.
+- Set up once with a single config block and the calendar shows up as a tool the assistant can use.
 
-- **Local (stdio)** — for an AI app running on the same Mac: zero network, zero auth, one JSON config block.
-- **Networked (HTTP)** — for another machine on the network, like a laptop or a remote Claude Code session, to reach the same calendar over a token-authenticated HTTP server.
+## Two ways to connect
 
-## Architecture
+- **On the same Mac.** The AI app launches the binary directly. No network, no login, nothing else to configure.
+- **From another machine.** The same binary can run as a small HTTP server on your private network, so a laptop or a remote coding session can reach the same calendar. Every client gets its own token, and any token can be revoked while the server keeps running.
 
-- `EventKitStore` wraps Apple's EventKit framework for the actual calendar reads and writes.
-- `MCPServer` implements the Model Context Protocol tool surface — `list_calendars`, `get_today`, `create_event`, `update_event`, `delete_event`, and more — on top of that store.
-- `HTTPTransport` and `Serve` run the networked mode: a LaunchAgent-managed daemon, request routing, and process lifecycle.
-- `Auth` and `TokenStore` implement the security model: every client gets its own revocable token, checked with a constant-time comparison, unioned across an environment variable, a default token file, and any number of per-host token files.
+## Decisions worth knowing
 
-## Engineering details worth noting
+- **It fails closed.** The network server refuses to start if no token is configured. Better not to run than to run open.
+- **The permission sticks.** macOS asks for calendar access once. The binary is signed with a fixed identity so that grant survives rebuilds and upgrades instead of prompting again every time.
+- **It is tested.** An XCTest suite covers auth, token storage, date parsing, and the HTTP server, and runs in CI on every push.
 
-- **Fail-closed auth.** The HTTP server refuses to start with no resolvable token at all, and revoking a token takes effect on a running server within about five seconds, no restart required.
-- **Stable code signing.** The binary is signed with a fixed identifier so the macOS "Allow Full Access" calendar grant survives rebuilds and upgrades.
-- **Input sanitization.** A fix in the renderer sanitizes calendar names before they reach terminal output or event confirmations, closing an escaping edge case found during review.
-- **Real test coverage.** An XCTest suite exercises auth, the token store, date parsing, rendering, and the serve command's HTTP surface, and runs in CI on every push.
-
-It ships through a Homebrew tap that builds, code-signs, and can auto-start the tool in one command.
+It installs through a Homebrew tap that builds and signs it in one command, with one more to run it in the background.

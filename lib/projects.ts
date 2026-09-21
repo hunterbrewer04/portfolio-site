@@ -7,6 +7,7 @@ export interface Project {
   slug: string;
   title: string;
   description: string;
+  tagline?: string; // one short line for the collapsed card; description shows on expand
   summary?: string; // longer copy; the card panel prefers highlights, then this, then description
   highlights: string[]; // 2-4 short bullets for the expanded card panel
   date: string; // "YYYY-MM-DD"
@@ -47,6 +48,7 @@ function parseProject(slug: string): Project {
     slug,
     title: String(data.title ?? ""),
     description: String(data.description ?? ""),
+    tagline: data.tagline != null ? String(data.tagline) : undefined,
     summary: data.summary != null ? String(data.summary) : undefined,
     highlights: Array.isArray(data.highlights) ? data.highlights.map(String) : [],
     date,

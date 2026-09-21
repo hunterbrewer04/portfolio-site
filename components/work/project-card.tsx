@@ -35,7 +35,7 @@ export function ProjectCard({
   onToggle,
   particleCount = 16,
 }: ProjectCardProps) {
-  const { title, description, summary, highlights, github, demo, slug, color, year } =
+  const { title, description, tagline, summary, highlights, github, demo, slug, color, year } =
     project;
   const hero = variant === "hero";
   const featured = hero || variant === "featured";
@@ -45,6 +45,14 @@ export function ProjectCard({
   const panelId = useId();
   const titleId = useId();
   const lit = isHovered || expanded;
+  // Panel paragraph: the full description when a tagline stood in for it
+  // above; otherwise only as a fallback so a project with no highlights
+  // still says something when opened.
+  const panelText = tagline
+    ? description
+    : highlights.length === 0
+      ? (summary ?? description)
+      : undefined;
 
   const burst = () => {
     if (reduce) return;
@@ -190,25 +198,24 @@ export function ProjectCard({
             id={titleId}
             className={cn(
               "font-semibold tracking-tight text-neutral-100 transition-colors group-hover:text-white",
-              hero
-                ? "text-2xl sm:text-3xl"
-                : featured
-                  ? "text-xl sm:text-2xl"
-                  : "text-lg sm:text-xl",
+              // Featured and compact share a size so every tile is the same height.
+              hero ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl",
             )}
           >
             {title}
           </h2>
         </button>
 
+        {/* The tagline is written to fit, so it is never clamped; the full
+            description waits in the panel below. Tiles always reserve two
+            lines here so a one-line tagline does not make a shorter card. */}
         <p
           className={cn(
             "mt-3 leading-relaxed text-neutral-400",
-            hero ? "max-w-2xl text-base" : "max-w-md text-sm",
-            !hero && (featured ? "line-clamp-3" : "line-clamp-2"),
+            hero ? "max-w-2xl text-base" : "min-h-[2lh] max-w-md text-sm",
           )}
         >
-          {description}
+          {tagline ?? description}
         </p>
 
         <p className="mt-4 font-mono text-xs" style={{ color }}>
@@ -233,7 +240,12 @@ export function ProjectCard({
             className="flex flex-col items-center gap-5 border-t pt-5"
             style={{ borderColor: `${color}33` }}
           >
-            {highlights.length > 0 ? (
+            {panelText && (
+              <p className={cn("text-sm leading-relaxed text-neutral-300", hero ? "max-w-xl" : "max-w-md")}>
+                {panelText}
+              </p>
+            )}
+            {highlights.length > 0 && (
               <ul
                 className={cn(
                   "flex w-full flex-col gap-2 text-left text-sm leading-relaxed text-neutral-300",
@@ -251,10 +263,6 @@ export function ProjectCard({
                   </li>
                 ))}
               </ul>
-            ) : (
-              <p className={cn("text-sm leading-relaxed text-neutral-300", hero ? "max-w-xl" : "max-w-md")}>
-                {summary ?? description}
-              </p>
             )}
             <div className="flex flex-wrap justify-center gap-2">
               <Link

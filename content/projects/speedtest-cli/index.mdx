@@ -1,6 +1,7 @@
 ---
 title: "Speedtest CLI"
 description: "A colorful terminal wrapper around Ookla's official speedtest CLI with live progress bars and stable JSON output for scripts."
+tagline: "Ookla's speedtest, with progress bars and script-friendly JSON."
 summary: "A pure Python, dependency-free wrapper around Ookla's official speedtest binary that renders live progress bars for ping, download, and upload, then prints a clean summary. Three flag-driven output modes give scripts a stable JSON schema, Ookla's full raw result, or a one-line summary instead."
 highlights:
   - "Live progress bars for ping, download, and upload, then a clean summary"
@@ -14,21 +15,21 @@ color: "#22c55e"
 draft: false
 ---
 
-Speedtest CLI is a small terminal wrapper that makes Ookla's official speedtest binary genuinely pleasant to run and easy to script against. Ookla's own CLI works, but it isn't built for a human watching a terminal or a script consuming the result — this fills that gap in about 300 lines of pure Python 3 with no dependencies.
+Speedtest CLI is a small wrapper that makes Ookla's official speed test nicer to run and easier to script. Ookla's own command works, but it was not built for a person watching a terminal or a script reading the result. This fills that gap in about 300 lines of Python with no dependencies.
 
 ## What it does
 
-Running it live-streams Ookla's JSONL progress events and renders them as colored progress bars for ping, download, and upload, then prints a formatted summary with server, ISP, and result-URL info. For scripts, three flatter output modes skip the animation entirely:
+Run it and you get live progress bars for ping, download, and upload, then a clean summary with your server, your ISP, and a link to the result. For scripts, three flags skip the animation:
 
 ```bash
-speedtest-cli --simple     # one-line summary
-speedtest-cli --json       # compact, stable JSON schema
-speedtest-cli --raw-json   # Ookla's full raw result
+speedtest-cli --simple     # one line
+speedtest-cli --json       # compact JSON with a stable shape
+speedtest-cli --raw-json   # everything Ookla reports
 ```
 
-## Notable details
+## Decisions worth knowing
 
-- **It shells out to the real Ookla binary** rather than reimplementing the speed-test protocol, so the numbers match what speedtest.net itself would report — a deliberate tradeoff of a bit of process-management complexity for measurement accuracy.
-- **It defends against a naming collision.** The Python `speedtest-cli` PyPI package installs its own `speedtest` command that produces different, less accurate numbers. A startup check runs `speedtest --version` and confirms the output actually says "Ookla" before trusting it, rather than assuming the first binary on PATH is the right one.
-- **The JSON schema is versioned deliberately.** An early version of `--json` produced a compact schema that other scripts came to depend on. Rather than break that when Ookla's full result format was wired in, `--json` keeps translating into the original shape, and a new `--raw-json` flag exposes the complete data — jitter, packet loss, result URL — for anything that wants it.
-- **Streaming avoids a deadlock.** The subprocess reads Ookla's stdout line by line as newline-delimited JSON instead of buffering, and deliberately leaves stderr connected to the parent terminal — an earlier version that piped stderr could hang if Ookla filled that buffer.
+- **It runs Ookla's real binary** instead of reimplementing the test, so the numbers match what speedtest.net itself would show.
+- **It checks it has the right `speedtest`.** A popular Python package installs its own `speedtest` command that produces different, less accurate numbers. This one confirms the binary on your PATH is actually Ookla's before trusting it.
+- **Old scripts keep working.** When Ookla's fuller result format was wired in, `--json` kept its original shape and the new data went behind `--raw-json`, so nothing that already depended on the output broke.
+- **It streams instead of buffering.** Output is read line by line as it arrives. That is what makes the live progress bars possible, and it avoids a hang an earlier version could hit.

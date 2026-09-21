@@ -1,6 +1,7 @@
 ---
 title: "Repo Graph Viewer"
 description: "An interactive code-graph viewer that renders any graphify graph.json in the browser as a 2D canvas or 3D WebGL force graph, colored by community, with search and a node detail panel."
+tagline: "See any codebase as an interactive 2D or 3D graph."
 summary: "Drop in the graph.json that graphify writes for a repo and walk the codebase by its call graph: hover to see a node's neighbors, click to open its detail panel, search to highlight matches, press G to swap between 2D canvas and 3D WebGL. Fully client-side, statically exported to Cloudflare Pages, with a defensive loader that survives graphify's changing output format and a test suite that pins the contract."
 highlights:
   - "Renders any graphify graph.json as a force-directed graph, 2D canvas or 3D WebGL, colored by community"
@@ -16,28 +17,23 @@ color: "#a855f7"
 draft: false
 ---
 
-Repo Graph Viewer turns the `graph.json` that [graphify](https://github.com/Graphify-Labs/graphify) extracts from a codebase into something you can actually explore. graphify parses a repo's AST into nodes (functions, classes, files) and links (calls, imports, definitions), then clusters them into communities. Its output is a JSON blob. This renders it as a live force-directed graph, in the browser, with nothing to install.
+Repo Graph Viewer turns a codebase into a picture you can explore. It reads the `graph.json` that [graphify](https://github.com/Graphify-Labs/graphify) produces for a repo, where every function, class, and file is a node and every call or import is a link, and draws it as a live force-directed graph in the browser. Related code pulls together into clusters and each cluster gets its own color, so the shape of a project is visible at a glance.
 
-The frame above is the real app running against this portfolio's own graph. Pick another example from the header, or drop any `graph.json` onto it.
+The frame above is the real app running on this portfolio's own code. Pick another example from the header, or drop any `graph.json` onto it.
 
-## What it does
+## What you can do
 
-- **Two renderers.** A 2D canvas for reading structure and a 3D WebGL view for the shape of a codebase. `G` toggles between them; 3D auto-rotates until you grab it.
-- **Walk the graph.** Hovering a node highlights it and its neighbors and dims everything else. Clicking opens a detail panel with the node's kind, file, community, and every neighbor as a link, so you can step through a call chain one hop at a time.
-- **Search.** Matches and their neighbors light up; `Esc` clears search and selection.
-- **Edge semantics are visible.** Solid edges are `EXTRACTED` from the AST; dashed edges are `INFERRED`, graphify's guess. Colors come from a 16-hue community palette.
-- **Bundled examples.** Five graphs from my own repos ship with the site and are fetched on click, not on load, so the initial page stays small.
-- **Phone layout.** The detail panel becomes a bottom sheet, tapping a node pans it into the strip above the sheet, and the search field is 16px because iOS Safari zooms the page to focus anything smaller.
+- **Switch between 2D and 3D.** The flat view is for reading structure; the 3D view shows the overall shape. Press `G` to toggle.
+- **Follow the connections.** Hover a node to light up everything it touches. Click it for details, then click any neighbor to step through the code one hop at a time.
+- **Search.** Type a name and the matching nodes and their neighbors light up.
+- **Bring your own repo.** Run graphify on any project and drop the result on the page. Five example graphs from my own repos are built in.
 
-## Engineering details worth noting
+## How it is built
 
-- **The loader is defensive on purpose.** graphify is under active development and its format moves. Across the repos this was tested against, `type` was usually absent, `built_at_commit` was sometimes missing entirely, `links` and `edges` both appeared, and new relation names and unmodeled fields kept showing up. The loader reads every field with a fallback, drops links that point at nodes not in the set (react-force-graph throws on them), wraps community colors by `community % 16` when a repo clusters past the palette, and a unit test covers each variation so the next format change fails a test instead of the page.
-- **react-force-graph mutates its input.** It writes `x`/`y`/`z` onto nodes and swaps each link's string `source`/`target` for a live node reference. So the graph object passed in is memoized, since a new one restarts the layout, and the adjacency index snapshots endpoint ids at build time rather than holding link references that will change under it.
-- **Opacity is multiplicative in 3D.** The renderer multiplies `nodeOpacity` by the alpha of the node's color, which made dimming double-apply. Both opacity props are pinned to 1 so the rgba color is the single source of truth, and 3D dims less than 2D because its spheres are already Lambert-shaded.
-- **Three.js stays out of the bundle until 3D opens.** The 2D and 3D renderers are imported as separate packages behind `next/dynamic` with `ssr: false`, rather than the `react-force-graph` umbrella, which also pulls in the AR/VR builds and throws `AFRAME is not defined` in dev.
-- **Theme without a flash.** Light or dark is applied by an inline script in the document body before first paint, ahead of React. Only the chrome switches: the canvas stays black in both themes because the community palette is tuned for light-on-dark. A `?theme=` URL param wins for a single load, which is how this page embeds it dark without touching a visitor's saved choice.
-- **A tripwire for the examples.** A test walks the example manifest and checks that every entry's file exists, parses through the loader, and matches the node, link, and community counts printed on its card. Regenerating a graph without updating the manifest fails the suite.
+A Next.js app with no backend. The whole thing is static files hosted on Cloudflare, and the graph itself is drawn by react-force-graph (d3-force for the layout, Three.js for 3D). It works on phones too: the detail panel becomes a bottom sheet, and tapping a node pans it into view.
 
-## Stack and deploy
+## Decisions worth knowing
 
-Next.js App Router, React 19, and Tailwind v4 on the page; `react-force-graph-2d` and `react-force-graph-3d` (d3-force layout, Three.js for the WebGL view) for the graph; Vitest for the loader, adjacency, and example tests. There is no backend. `output: "export"` produces a plain static site and Cloudflare Pages builds it from the repo on every push.
+- **It survives format changes.** graphify is under active development and its output keeps shifting. The loader reads every field with a fallback, and a test covers each variation I have hit, so a new format breaks a test instead of the page.
+- **3D only loads when you ask for it.** Three.js is the heaviest dependency, so it stays out of the download until someone switches to 3D.
+- **No theme flash.** Light or dark is applied before the first paint. The page can also be told which theme to use through the URL, which is how it is embedded here in dark to match the rest of the site.
