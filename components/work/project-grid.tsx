@@ -33,7 +33,7 @@ export function ProjectGrid({ projects }: ProjectGridProps) {
     );
   }
 
-  // getAllProjects() sorts featured first (then newest), so the first
+  // getAllProjects() sorts featured first (then by order, then newest), so the first
   // MAX_FEATURED featured entries win; any beyond that fall into the grid.
   const featured = projects.filter((p) => p.featured).slice(0, MAX_FEATURED);
   const rest = projects.filter((p) => !featured.includes(p));
