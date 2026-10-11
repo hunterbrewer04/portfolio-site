@@ -5,6 +5,7 @@ import { getAllProjectSlugs, getProjectBySlug } from "@/lib/projects";
 import { ProjectHero } from "@/components/work/project-hero";
 import { LiveDemo } from "@/components/work/live-demo";
 import { workMdxComponents } from "@/components/work/mdx-components";
+import { ProjectAccent } from "@/components/work/project-accent";
 import { ScrollFadeIn } from "@/components/motion/scroll-fade-in";
 
 export const dynamicParams = false;
@@ -60,7 +61,9 @@ export default async function ProjectPage({ params }: PageProps) {
         </ScrollFadeIn>
       )}
       <ScrollFadeIn direction="up" distance={16} amount={0} className="mx-auto max-w-3xl">
-        <MDXRemote source={project.content} components={workMdxComponents} />
+        <ProjectAccent color={project.color}>
+          <MDXRemote source={project.content} components={workMdxComponents} />
+        </ProjectAccent>
       </ScrollFadeIn>
     </div>
   );

@@ -1,0 +1,45 @@
+---
+title: "Media Watch"
+description: "Lets AI agents actually watch videos: a link goes in, and a structured, timestamped report of what was seen and heard comes out."
+tagline: "Lets AI agents watch a video and report what they saw and heard."
+summary: "Give it an Instagram reel, TikTok, YouTube Short, tweet, or a local file plus an optional question. It downloads the video with yt-dlp, shrinks it with ffmpeg to fit a single request, has a video-native Gemini model watch the whole clip through OpenRouter, and returns a schema-validated report. Ships as a Hermes Agent plugin, a standalone mw CLI, and a dependency-light Python library, with exact per-call cost logging."
+highlights:
+  - "Sends the whole clip, audio included, to a video-native model instead of sampling frames"
+  - "Returns a schema-validated, timestamped report of what was seen, said, and heard"
+  - "Ships as a Hermes plugin, a standalone CLI, and a Python library, with per-call cost logging"
+date: 2026-10-09
+tags: ["Python", "AI Agents", "Gemini", "OpenRouter", "ffmpeg", "yt-dlp", "pytest"]
+github: "https://github.com/hunterbrewer04/media-watch"
+featured: true
+color: "#f43f5e"
+draft: false
+---
+
+Media Watch gives AI agents a way to watch video. Agents are usually blind to it. The common workaround of grabbing a handful of still frames throws away speech, music, motion, and everything that happens between frames. Media Watch sends the entire clip, audio included, to a model that natively understands video, and hands back a structured report the agent can reason over: what happens and when, what's written on screen, what's said, and what it sounds like.
+
+```text
+$ mw watch "https://www.instagram.com/reel/…" -q "what's the recipe?"
+[instagram] Crispy chili oil noodles  ·  42.3s  ·  google/gemini-3.8-flash  ·  $0.0061
+A creator makes chili oil noodles in one pan, narrating each step over upbeat music…
+Answer: Boil noodles, then pour hot oil over garlic, chili flakes, sesame and soy sauce…
+```
+
+## How it works
+
+<FlowDiagram id="media-watch-pipeline" />
+
+## Three ways to use it
+
+- **A Hermes Agent plugin** that adds a `watch_video` tool, so you can paste a link into a chat with your agent and ask about it.
+- **A standalone CLI**, `mw watch` and `mw stats`, for scripts, debugging, or any other agent framework.
+- **A plain Python library.** The core deliberately has no Hermes imports and depends only on `httpx` and `pydantic`; the plugin is a thin layer that injects Hermes' profile-aware secret lookup into the same `watch()` call.
+
+## Engineering details worth noting
+
+- **Size math built around the model's limit.** The proxy is capped at 14 MiB because base64 inflates it by a third, landing at ~19 MB, just under Gemini's ~20 MB inline request limit. If a 480p, 15 fps encode is still too big, ffmpeg re-encodes at progressively higher CRF until it fits, and a test asserts the budget math directly.
+- **Fallback only when it can help.** A failed call falls back to a different model, except for a bad key, exhausted credits, a forbidden request, or a too-large payload: errors where switching models can't change the outcome.
+- **Honest cost accounting.** Every paid attempt is logged to SQLite with OpenRouter's own reported cost, including failed retries and the failed primary before a fallback, so `mw stats` reflects what was actually spent.
+- **Two careful cache layers.** Downloads are keyed by the canonical URL with tracking parameters stripped (or by path, size, mtime, and head/tail bytes for local files); reports are keyed by prompt version, model, and normalized question. A fallback model's answer is never cached under the primary model's key.
+- **Strict structured output, checked twice.** The JSON schema is sent with `strict: true`, OpenRouter is told to route only to providers that support it, and the response is validated again with Pydantic, with a test proving the schema and the model can't drift apart.
+- **Prompt-injection aware.** The post title is treated as context only ("trust what you see"), and the plugin labels the whole report as untrusted content so the agent never follows instructions hidden in a video.
+- **Hermetic tests and secret-scanning CI.** No real footage lives in the repo: ffmpeg generates a synthetic test clip, OpenRouter is mocked with `httpx.MockTransport`, and CI runs gitleaks, ruff, and 40 pytest cases on every push.
