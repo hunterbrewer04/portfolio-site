@@ -1,6 +1,15 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState, type ComponentType } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ComponentType,
+} from "react";
 import { AnimatePresence, animate, motion, useInView, useReducedMotion } from "motion/react";
 import {
   AppWindow,
@@ -74,6 +83,9 @@ const HOLD_MS = 1800;
 /** Intro (nodes + edges drawing in) before the first packet launches. */
 const INTRO_MS = 1100;
 const EASE = [0.22, 1, 0.36, 1] as const;
+const INSTANT = { duration: 0 } as const;
+
+const noopSubscribe = () => () => {};
 
 export function FlowDiagram({ id }: { id: string }) {
   const def = getFlowDiagram(id);
@@ -84,7 +96,12 @@ export function FlowDiagram({ id }: { id: string }) {
 
 function FlowDiagramView({ def }: { def: FlowDiagramDef }) {
   const color = useProjectAccent();
-  const reduce = useReducedMotion() ?? false;
+  // useReducedMotion() is null on the server but real on the first client
+  // render, so gate it on mount: hydration then matches the server HTML and
+  // reduced motion takes effect one render later.
+  const prefersReduced = useReducedMotion() ?? false;
+  const hydrated = useSyncExternalStore(noopSubscribe, () => true, () => false);
+  const reduce = hydrated && prefersReduced;
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
 
   const rootRef = useRef<HTMLElement>(null);
@@ -106,7 +123,13 @@ function FlowDiagramView({ def }: { def: FlowDiagramDef }) {
     return () => ro.disconnect();
   }, []);
 
-  const geo = useMemo(() => computeGeometry(def, variant), [def, variant]);
+  // Both layouts are computed up front so bad narrow data fails the build
+  // instead of crashing only on phones.
+  const geos = useMemo(
+    () => ({ wide: computeGeometry(def, "wide"), narrow: computeGeometry(def, "narrow") }),
+    [def],
+  );
+  const geo = geos[variant];
   const hops = useMemo(() => resolveHops(def), [def]);
 
   const [introDone, setIntroDone] = useState(false);
@@ -136,7 +159,9 @@ function FlowDiagramView({ def }: { def: FlowDiagramDef }) {
   const haloRef = useRef<SVGCircleElement>(null);
   const trailRef = useRef<SVGPathElement>(null);
 
-  useEffect(() => {
+  // Layout effect so the packet is placed before paint and never flashes at
+  // its previous position.
+  useLayoutEffect(() => {
     if (!autoplay) return;
     if (hop >= stepHops.length) {
       const t = setTimeout(() => {
@@ -216,7 +241,6 @@ function FlowDiagramView({ def }: { def: FlowDiagramDef }) {
               type="button"
               onClick={() => setPlaying((p) => !p)}
               aria-label={playing ? "Pause animation" : "Play animation"}
-              aria-pressed={!playing}
               className={btn}
             >
               {playing ? <Pause size={15} /> : <Play size={15} />}
@@ -269,6 +293,7 @@ function FlowDiagramView({ def }: { def: FlowDiagramDef }) {
           initial={false}
           animate={{ opacity: measured ? 1 : 0 }}
           transition={{ duration: 0.2 }}
+          overflow="visible"
         >
           <defs>
             <pattern id={`dots-${uid}`} width="16" height="16" patternUnits="userSpaceOnUse">
@@ -307,9 +332,9 @@ function FlowDiagramView({ def }: { def: FlowDiagramDef }) {
           {geo.zones.map((z) => (
             <motion.g
               key={z.label}
-              initial={reduce ? false : { opacity: 0 }}
+              initial={{ opacity: 0 }}
               animate={seen ? { opacity: 1 } : undefined}
-              transition={{ duration: 0.6 }}
+              transition={reduce ? INSTANT : { duration: 0.6 }}
             >
               <rect
                 x={z.x}
@@ -337,6 +362,8 @@ function FlowDiagramView({ def }: { def: FlowDiagramDef }) {
           {def.edges.map((edge, i) => {
             const g = geo.edges[edge.id];
             const lit = litEdges.has(edge.id);
+            // Arrowheads show the edge's request direction; a step may send the
+            // packet back along it (a response), which is intentional.
             const markerEnd = `url(#${lit ? "arrow-lit" : "arrow"}-${uid})`;
             return (
               <g key={edge.id}>
@@ -350,9 +377,9 @@ function FlowDiagramView({ def }: { def: FlowDiagramDef }) {
                   strokeWidth="1.25"
                   markerEnd={markerEnd}
                   markerStart={edge.bidirectional ? markerEnd : undefined}
-                  initial={reduce ? false : { pathLength: 0, opacity: 0 }}
+                  initial={{ pathLength: 0, opacity: 0 }}
                   animate={seen ? { pathLength: 1, opacity: 1 } : undefined}
-                  transition={{ duration: 0.7, delay: 0.25 + i * 0.05, ease: EASE }}
+                  transition={reduce ? INSTANT : { duration: 0.7, delay: 0.25 + i * 0.05, ease: EASE }}
                 />
                 <motion.path
                   d={g.d}
@@ -366,9 +393,9 @@ function FlowDiagramView({ def }: { def: FlowDiagramDef }) {
                 />
                 {geo.edgeLabels && edge.label && g.labelW > 0 && (
                   <motion.g
-                    initial={reduce ? false : { opacity: 0 }}
+                    initial={{ opacity: 0 }}
                     animate={seen ? { opacity: 1 } : undefined}
-                    transition={{ duration: 0.5, delay: 0.6 + i * 0.05 }}
+                    transition={reduce ? INSTANT : { duration: 0.5, delay: 0.6 + i * 0.05 }}
                   >
                     <rect
                       x={g.mid.x - g.labelW / 2}
@@ -412,6 +439,7 @@ function FlowDiagramView({ def }: { def: FlowDiagramDef }) {
               color={color}
               seen={seen}
               reduce={reduce}
+              uid={uid}
               delay={i * 0.06}
               narrow={variant === "narrow"}
             />
@@ -424,10 +452,10 @@ function FlowDiagramView({ def }: { def: FlowDiagramDef }) {
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={step}
-            initial={reduce ? false : { opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={reduce ? undefined : { opacity: 0, y: -6 }}
-            transition={{ duration: 0.25, ease: EASE }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={reduce ? INSTANT : { duration: 0.25, ease: EASE }}
           >
             <p className="flex items-baseline gap-2 text-sm font-medium text-neutral-200">
               <span className="font-mono text-[11px]" style={{ color }}>
@@ -460,11 +488,12 @@ interface DiagramNodeProps {
   color: string;
   seen: boolean;
   reduce: boolean;
+  uid: string;
   delay: number;
   narrow: boolean;
 }
 
-function DiagramNode({ node, box, lit, color, seen, reduce, delay, narrow }: DiagramNodeProps) {
+function DiagramNode({ node, box, lit, color, seen, reduce, uid, delay, narrow }: DiagramNodeProps) {
   const Icon = node.icon ? ICONS[node.icon] : undefined;
   const kind = node.kind ?? "service";
   const rx = kind === "client" ? box.h / 2 : kind === "store" ? 6 : 9;
@@ -475,9 +504,9 @@ function DiagramNode({ node, box, lit, color, seen, reduce, delay, narrow }: Dia
 
   return (
     <motion.g
-      initial={reduce ? false : { opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={seen ? { opacity: 1, y: 0 } : undefined}
-      transition={{ duration: 0.5, delay, ease: EASE }}
+      transition={reduce ? INSTANT : { duration: 0.5, delay, ease: EASE }}
     >
       {/* Glow behind lit nodes */}
       <motion.rect
@@ -490,7 +519,7 @@ function DiagramNode({ node, box, lit, color, seen, reduce, delay, narrow }: Dia
         initial={false}
         animate={{ opacity: lit ? 0.16 : 0 }}
         transition={{ duration: reduce ? 0 : 0.35 }}
-        style={{ filter: "blur(8px)" }}
+        filter={`url(#glow-${uid})`}
       />
       <motion.rect
         x={box.x}

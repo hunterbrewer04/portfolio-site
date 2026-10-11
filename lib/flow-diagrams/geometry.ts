@@ -138,7 +138,11 @@ export function computeGeometry(def: FlowDiagramDef, variant: Variant): DiagramG
   }
 
   const zones: ZoneGeometry[] = (def.zones ?? []).map((zone) => {
-    const members = zone.nodes.map((id) => boxes[id]);
+    const members = zone.nodes.map((id) => {
+      const box = boxes[id];
+      if (!box) throw new Error(`FlowDiagram "${def.title}": zone "${zone.label}" references an unknown node "${id}"`);
+      return box;
+    });
     const minX = Math.min(...members.map((b) => b.x)) - ZONE_PAD;
     const maxX = Math.max(...members.map((b) => b.x + b.w)) + ZONE_PAD;
     const minY = Math.min(...members.map((b) => b.y)) - ZONE_PAD - ZONE_LABEL;
