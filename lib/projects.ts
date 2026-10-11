@@ -17,6 +17,7 @@ export interface Project {
   demo?: string;
   embed?: string; // URL of a live build framed on the project page, above the Overview
   featured: boolean;
+  order?: number; // optional manual position; lower sorts first, ahead of unordered projects
   color: string; // normalized 6-digit hex, default "#6366f1"
   cover?: string;
   content: string; // MDX body (the Overview)
@@ -58,6 +59,7 @@ function parseProject(slug: string): Project {
     demo: data.demo != null ? String(data.demo) : undefined,
     embed: data.embed != null ? String(data.embed) : undefined,
     featured: Boolean(data.featured),
+    order: typeof data.order === "number" ? data.order : undefined,
     color: HEX6.test(colorRaw) ? colorRaw : "#6366f1",
     cover: data.cover != null ? String(data.cover) : undefined,
     content,
@@ -67,7 +69,7 @@ function parseProject(slug: string): Project {
 
 /**
  * Every project directory (content/projects/<slug>/ containing an index.mdx),
- * drafts included, sorted featured-first then date desc. ENOENT → [] so the
+ * drafts included, sorted featured-first, then by `order`, then date desc. ENOENT → [] so the
  * static export builds before any content exists (mirrors lib/blog.ts).
  */
 function readAllProjects(): Project[] {
@@ -93,11 +95,12 @@ function readAllProjects(): Project[] {
   return projects.sort(
     (a, b) =>
       Number(b.featured) - Number(a.featured) ||
+      (a.order ?? Infinity) - (b.order ?? Infinity) ||
       new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 }
 
-/** Non-draft projects, featured-first then date desc. */
+/** Non-draft projects, featured-first, then by `order`, then date desc. */
 export function getAllProjects(): Project[] {
   return readAllProjects().filter((project) => !project.draft);
 }

@@ -1,0 +1,45 @@
+---
+title: "Docker Registry"
+description: "A private registry for Docker Compose stacks: push any homelab stack from any host, pull it onto a fresh one, and never let a real secret leave the machine it lives on."
+tagline: "Push a Compose stack from any host and rebuild it on any other."
+summary: "One static Go binary that's both the server and the CLI. It stores each stack's compose file, a sanitized .env template, and its notes, so any stack can be rebuilt anywhere with pull and compose up. Files on disk are the source of truth (no database, no git, no secrets), with crash-safe atomic writes, full version history, path-traversal-safe pulls, and an embedded React UI for browsing, diffing, and editing."
+highlights:
+  - "One static Go binary that is both the server and the CLI"
+  - "Secrets are blanked on the client and checked again on the server, so real values never leave the host"
+  - "Crash-safe writes, full version history, and a built-in web UI for diffs and edits"
+date: 2026-09-16
+tags: ["Go", "React", "TypeScript", "Docker", "CLI", "Vite", "Tailscale"]
+featured: true
+order: 2
+color: "#f97316"
+draft: false
+---
+
+Docker Registry is a private registry for my homelab's **Docker Compose stacks**, not container images. Every stack on every machine gets its `docker-compose.yml`, a sanitized `.env.example`, and a `NOTES.md` stored in one place, so if a server dies, any stack can be rebuilt on any other machine with two commands:
+
+```bash
+docker-registry pull mealie
+cd mealie && docker compose up -d
+```
+
+The design rule is that **files on disk are the truth**: no database, no git, and no secrets stored. The whole registry is a directory tree, so `tar -C data .` is a complete backup, and every version of every stack is kept as a plain directory snapshot.
+
+<FlowDiagram id="docker-registry-flow" />
+
+## One binary, three jobs
+
+The same statically linked Go binary is the HTTP server, the CLI, and the host for its own downloads. The server builds and serves CLI binaries for Linux and macOS, so a new machine on the tailnet can install the tool with one `curl` and log in. The React + Vite web UI is compiled into the binary with `go:embed`, and the whole thing ships as a distroless, non-root container.
+
+The CLI covers `push` (or `push --all` for every stack under a directory), `pull`, `list`, `show`, `notes`, and `open`, with a pinned exit-code contract so scripts can tell the cases apart: `0` ok, `1` refused, `2` registry unreachable, `3` usage error.
+
+## Engineering details worth noting
+
+- **Secrets never leave the source host.** A shared sanitizer blanks secret values based on key segments (so `KEYCLOAK_REALM` isn't mistaken for a key, but `DB_PASSWORD` is), credentials embedded in URLs, high-entropy strings, JWT shapes, and known token prefixes. It also handles multi-line PEM values and escaped quotes; the escaped-quote handling closed a real leak that review caught. Interpolations, file paths, ports, and hosts are explicitly allowed through.
+- **Defense in depth.** The server runs the exact same sanitizer again on every upload and re-scans the compose file for literal inline secrets, returning a 422 instead of storing them. It never trusts that the client already cleaned anything.
+- **Crash-safe writes.** Each push writes to a hidden temp directory, snapshots the current version into history, then swaps directories by rename with full rollback on failure. On startup, the store detects a swap interrupted by a crash and restores the previous version. Per-stack locks plus a store-wide lock mean a backup export never sees a half-written stack, and concurrent pushes are tested under Go's race detector.
+- **Pull can't escape its directory or clobber secrets.** The bundle is unpacked in memory and every entry is validated as a bare, regular file before anything is written. A `../` entry aborts the pull with nothing on disk. It refuses to run if a `.env` already exists, checking both before the download and again right before writing.
+- **Compose parsing without Docker.** Stacks are parsed structurally (services, images, ports, volumes, healthchecks), including YAML anchors and merge keys and `${VAR:-default}` values that haven't been resolved yet, using real stacks as test fixtures plus a test that the parser never panics.
+- **Well tested.** 79 Go test functions (about 3,300 lines of tests against 3,600 lines of code) and 43 Vitest + Testing Library cases for the UI, with only two Go dependencies: cobra and yaml.v3.
+- **Built with parallel agents.** I planned it as a spec, then had coding agents implement it in four dependency-ordered waves (foundations, then the sanitizer/compose/store core, then the API, CLI, and UI pages, then docs), each piece reviewed before merging.
+
+<p className="text-sm text-neutral-500">Source is private for now while I clean up deployment-specific configuration.</p>

@@ -1,0 +1,51 @@
+---
+title: "Web Stack"
+description: "A self-hosted web search and page-reading backend for AI agents: free metasearch, a tiered extraction ladder up to a real browser, and strict privacy by construction."
+tagline: "Self-hosted web search and page reading for my AI agents."
+summary: "Five containers behind one custom Python escalation router give my agents web search and full-page reading without a hosted search API. SearXNG handles search with Brave as a rate-limited fallback; pages climb from Trafilatura to headless Chromium to a real Camofox browser only when a content gate rejects the cheaper result. Served as REST, a versioned /v1 API, and an MCP server, with budgets, robots.txt, per-domain politeness, verified caching, and telemetry that never stores a query."
+highlights:
+  - "Free SearXNG metasearch first, with Brave only as a rate-limited fallback"
+  - "Pages climb from fast extraction to headless Chromium to a real browser only when needed"
+  - "One router serves REST, a versioned API, and MCP, and never stores a query"
+date: 2026-09-28
+tags: ["Python", "FastAPI", "MCP", "Docker", "SearXNG", "Crawl4AI", "SQLite", "Self-hosted"]
+featured: true
+order: 1
+color: "#0ea5e9"
+draft: false
+---
+
+Web Stack is the web layer behind my AI agents: a self-hosted backend that searches the web and reads pages in full, running on my home server and reachable only over my private Tailscale network. Instead of paying a hosted search API for snippets, agents get real page text, and they get it from the cheapest method that actually works for that page.
+
+Everything sits behind one custom **escalation router** (FastAPI + FastMCP) that exposes the same core functions three ways: a REST API, a versioned `/v1` API, and an MCP server with `web_search`, `web_extract`, `web_acquire`, and `web_health` tools. Hermes agents reach it through a native provider plugin I wrote; Claude Code reaches it over MCP.
+
+<FlowDiagram id="web-stack-search" />
+
+## Reading a page, cheapest tier first
+
+Most pages don't need a browser. Some can't be read without one. The router starts cheap and escalates only when a **content acceptance gate** rejects what came back, and that gate exists because "HTTP 200" is not the same as "got the page." A JavaScript loading shell, a Cloudflare interstitial, or a "please enable cookies" wall is never handed to an agent as an answer.
+
+<FlowDiagram id="web-stack-read" />
+
+## The stack
+
+- **SearXNG + Valkey:** private metasearch, the primary search engine.
+- **Trafilatura:** a small FastAPI service I wrote for tier 1: fast readable-text extraction, returning 422 to mean "nothing here, escalate."
+- **Crawl4AI:** tier 3, headless Chromium for JavaScript-rendered pages.
+- **Camofox:** tier 4, a real browser on a second machine for the hardest sites, with every tab cleaned up even when a request is cancelled mid-flight.
+- **The router:** 19 Python modules (~7,200 lines) handling auth, budgets, policy, the tier loop, caching, learned per-domain routing, and telemetry, backed by SQLite in WAL mode.
+- **An isolated canary:** the router can run side by side under an immutable image tag with its own database and browser tab group, and a script proves the two can't see each other's data.
+
+Every container runs with a read-only root filesystem, all Linux capabilities dropped, and memory and process limits.
+
+## Engineering details worth noting
+
+- **Privacy by construction.** URL query strings and credentials are redacted from every log record process-wide, including tracebacks. Cache keys store a hash of the query string instead of the string itself, and search queries are kept only as a salted HMAC plus length and word count. A verification script plants sentinel values and then greps every SQLite table and the container logs to prove they never land anywhere.
+- **Budgets that can't poison the cache.** Each mode (lookup, research, deep) caps sources, characters, time, and tier attempts. The cache always stores the full body with a SHA-256 digest and trims only the response. That fix was written test-first after reproducing a real bug where a budget-truncated page got cached as if it were complete.
+- **Truthful errors.** Ten stable error classes, each with a real HTTP status and retry semantics. When a tier reports a generic 502, the router recovers the origin's true status from the error body, so a dead link comes back as a 404 instead of a cached error page. Terminal errors stop the ladder instead of wasting a browser on a page that doesn't exist.
+- **A hardened raw lane.** Plain-text resources skip extraction entirely, through a fetch that checks every resolved IP (including the CGNAT range Python's `is_private` misses), pins DNS while keeping TLS SNI correct, re-validates each redirect, and caps the download as it streams.
+- **Polite by default.** Everything egresses from a residential IP, so robots.txt is honored (a disallow is a refusal, not a reason to escalate), each domain gets at most two concurrent requests a second apart, and the paid search fallback is serialized with a capped `Retry-After`-aware retry.
+- **Verified, not assumed.** Thirteen standalone verification suites, roughly 490 checks, cover the `/v1` contract, telemetry privacy, the Hermes provider, rate limiting, and rollback compatibility. A golden harness runs 25 real URLs across static, docs, JavaScript, and bot-walled sites and asserts on content (length, structure, title, which tier resolved it) rather than status codes, with drift tracked against a saved baseline.
+- **Safe rollbacks.** Schema changes are additive only, and compatibility probes load an older router's code against the new database to prove an image rollback can't serve stale or truncated rows.
+
+<p className="text-sm text-neutral-500">Source is private for now while I clean up deployment-specific configuration.</p>

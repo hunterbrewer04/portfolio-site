@@ -9,7 +9,7 @@ interface ProjectGridProps {
   projects: Omit<Project, "content">[];
 }
 
-const MAX_FEATURED = 3;
+const MAX_FEATURED = 4;
 
 function SectionLabel({ children }: { children: string }) {
   return (
@@ -33,20 +33,21 @@ export function ProjectGrid({ projects }: ProjectGridProps) {
     );
   }
 
-  // getAllProjects() sorts featured first (then newest), so the first
+  // getAllProjects() sorts featured first (then by order, then newest), so the first
   // MAX_FEATURED featured entries win; any beyond that fall into the grid.
   const featured = projects.filter((p) => p.featured).slice(0, MAX_FEATURED);
   const rest = projects.filter((p) => !featured.includes(p));
   const toggle = (slug: string) => () =>
     setOpenSlug((s) => (s === slug ? null : slug));
 
-  // One featured project gets the full-width row; two or three share a grid.
+  // One featured project gets the full-width row; three share a row; two or
+  // four sit in pairs so four never leaves an orphan on a three-column row.
   const featuredCols =
     featured.length === 1
       ? "grid-cols-1"
-      : featured.length === 2
-        ? "grid-cols-1 sm:grid-cols-2"
-        : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
+      : featured.length === 3
+        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+        : "grid-cols-1 sm:grid-cols-2";
 
   return (
     <div className="flex flex-col gap-12">

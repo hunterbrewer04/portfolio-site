@@ -2,6 +2,7 @@
 import type { MDXComponents } from "mdx/types";
 import type { ImgHTMLAttributes, VideoHTMLAttributes } from "react";
 import { mdxComponents } from "@/components/blog/mdx-components";
+import { FlowDiagram } from "@/components/work/flow-diagram";
 
 // ---------------------------------------------------------------------------
 // Media overrides for project Overview MDX.
@@ -55,4 +56,5 @@ export const workMdxComponents: MDXComponents = {
   img: Img,
   Video,
   YouTube,
+  FlowDiagram,
 };
