@@ -77,9 +77,9 @@ const ICONS: Record<FlowIcon, ComponentType<LucideProps>> = {
 /** Container width below which the stacked phone layout is used. */
 const NARROW_MAX = 560;
 /** Seconds for a packet to cross a ~180-unit edge (scaled by edge length). */
-const HOP_SECONDS = 0.9;
+const HOP_SECONDS = 1.15;
 /** Pause on a completed step before advancing. */
-const HOLD_MS = 1800;
+const HOLD_MS = 2400;
 /** Intro (nodes + edges drawing in) before the first packet launches. */
 const INTRO_MS = 1100;
 const EASE = [0.22, 1, 0.36, 1] as const;
