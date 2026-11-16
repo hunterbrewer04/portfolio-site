@@ -138,14 +138,17 @@ export function getAllProjectSlugs(): string[] {
  * The published projects either side of `slug` in /work order, for the
  * previous/next links at the foot of a project page. No wraparound.
  */
+export type ProjectNeighbor = Pick<Project, "slug" | "title" | "color"> & { blurb: string };
+
 export function getAdjacentProjects(slug: string): {
-  prev?: Pick<Project, "slug" | "title" | "color">;
-  next?: Pick<Project, "slug" | "title" | "color">;
+  prev?: ProjectNeighbor;
+  next?: ProjectNeighbor;
 } {
   const list = getAllProjects();
   const i = list.findIndex((p) => p.slug === slug);
   if (i === -1) return {};
-  const pick = (p?: Project) => (p ? { slug: p.slug, title: p.title, color: p.color } : undefined);
+  const pick = (p?: Project): ProjectNeighbor | undefined =>
+    p ? { slug: p.slug, title: p.title, color: p.color, blurb: p.tagline ?? p.description } : undefined;
   return { prev: pick(list[i - 1]), next: pick(list[i + 1]) };
 }
 

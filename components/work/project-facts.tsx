@@ -27,7 +27,7 @@ export function ProjectFacts({ year, status, role, timeline, stats, color }: Pro
   if (facts.length < 2) return null;
 
   return (
-    <ScrollFadeIn direction="up" distance={16} delay={0.1} className="w-full max-w-3xl">
+    <ScrollFadeIn direction="up" distance={16} delay={0.4} amount={0} className="w-full max-w-3xl">
       {/* gap-px over a hairline-colored grid draws the dividers, whatever the column count */}
       <dl
         className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.06] sm:grid-flow-col sm:auto-cols-fr sm:grid-cols-none"

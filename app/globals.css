@@ -181,3 +181,25 @@
     animation: none;
   }
 }
+
+/* Tech-stack chips settle in one after another (delay set inline per chip). */
+.chip-in {
+  animation: chip-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip-in {
+    animation: none;
+  }
+}

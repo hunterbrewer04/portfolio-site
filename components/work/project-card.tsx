@@ -34,7 +34,7 @@ export function ProjectCard({
   variant = "compact",
   expanded,
   onToggle,
-  particleCount = 16,
+  particleCount = 12,
 }: ProjectCardProps) {
   const {
     title,
@@ -86,7 +86,7 @@ export function ProjectCard({
   const onCardClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest("a, button")) return;
     onToggle();
-    burst();
+    if (!expanded) burst();
   };
 
   const pill =
@@ -99,14 +99,9 @@ export function ProjectCard({
   return (
     <motion.article
       onClick={onCardClick}
-      onHoverStart={() => {
-        setIsHovered(true);
-        burst();
-      }}
-      onHoverEnd={() => {
-        setIsHovered(false);
-        setParticles([]);
-      }}
+      // The burst is saved for opening a card; on every hover it read as noise.
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
       whileHover={reduce ? undefined : { y: -3 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       data-lit={lit}
@@ -162,7 +157,8 @@ export function ProjectCard({
                 y: Math.sin(rad) * p.distance,
               }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 1.2, ease: "easeOut" }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              onAnimationComplete={() => setParticles((ps) => ps.filter((x) => x.id !== p.id))}
             />
           );
         })}
@@ -204,7 +200,7 @@ export function ProjectCard({
           aria-controls={panelId}
           onClick={() => {
             onToggle();
-            burst();
+            if (!expanded) burst();
           }}
           className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
         >
@@ -247,7 +243,16 @@ export function ProjectCard({
               ? { opacity: 1, height: "auto", marginTop: 20 }
               : { opacity: 0, height: 0, marginTop: 0 }
           }
-          transition={{ duration: reduce ? 0 : 0.4, ease: "easeInOut" }}
+          transition={
+            reduce
+              ? { duration: 0 }
+              : {
+                  height: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+                  marginTop: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+                  // fade in once the panel has room, fade out before it closes
+                  opacity: { duration: 0.25, delay: expanded ? 0.12 : 0 },
+                }
+          }
           className="w-full overflow-hidden"
         >
           <div

@@ -1,12 +1,11 @@
 ---
 title: "Clean TV"
-description: "A small, ad-free home screen for Google TV and Android TV, plus reversible ADB scripts that switch the stock launcher off and clear out preinstalled bloat on any brand."
+description: "An ad-free home screen for Google TV and Android TV, with simple, undoable cleanup scripts."
 tagline: "An ad-free home screen for Google TV, with reversible debloat scripts."
-summary: "A 115 KB pure-Kotlin launcher with no ads, no tracking, and no network access, paired with brand-aware ADB scripts that disable bloat one batch at a time. Every script is a dry run until you opt in, nothing is ever uninstalled, and one command puts the TV back the way it was."
 highlights:
-  - "A 115 KB pure-Kotlin launcher with no ads, no tracking, and no network access"
-  - "Brand-aware ADB scripts that are dry runs until you opt in, and fully undoable"
-  - "Uses about half the RAM of the stock Google TV home screen on the same set"
+  - "A calm, ad-free home screen for Google TV"
+  - "About 115 KB, using roughly half the memory of the stock home"
+  - "Cleanup scripts that preview first and undo with one command"
 date: 2026-10-27
 timeline: "Oct 2026"
 status: "Released, v0.5.4"
@@ -23,9 +22,9 @@ color: "#f97316"
 draft: false
 ---
 
-Clean TV replaces the ad-filled Google TV home screen with a quiet one. It is a single 115 KB Kotlin app: a clock and greeting over a grid of the apps you actually installed, an inputs menu, and a screensaver. Next to it ships a set of ADB scripts that hand the Home button over to Clean TV and switch off the preinstalled apps the TV came with, one batch at a time, with a single command to undo all of it.
+Clean TV replaces the ad-filled Google TV home screen with a calm one: a clock and greeting over a grid of the apps you actually use. It comes with a set of simple, undoable scripts that switch off the apps the TV came preloaded with.
 
-Every screenshot here is real, pulled from a TCL Google TV over ADB. The signed APK is on [GitHub Releases](https://github.com/hunterbrewer04/clean-tv/releases/latest).
+Every screenshot here is real, pulled from a TCL Google TV. The app is free to download from [GitHub Releases](https://github.com/hunterbrewer04/clean-tv/releases/latest).
 
 <Gallery>
   <Shot src="/projects/clean-tv/app-menu.webp" alt="App menu with Move and Uninstall" caption="Hold OK on an app" />
@@ -35,29 +34,12 @@ Every screenshot here is real, pulled from a TCL Google TV over ADB. The signed 
 
 ## What it does
 
-- **No ads, no tracking, no network.** No third-party runtime libraries. The only permission it asks for opens the system's own "Uninstall?" dialog.
-- **Your apps, your order.** Hold OK on any tile to move it, or to uninstall it if you installed it yourself. New installs show up right away.
-- **Inputs built at runtime.** The menu lists whatever HDMI, AV, and tuner sources the TV reports, with nothing hardcoded per model.
-- **Lighter than stock.** About 55 to 75 MB of RAM in use, against about 150 MB for the stock home screen on the same TV.
+- A home screen with no ads, no tracking, and no internet access of its own.
+- Your apps, in the order you choose, plus quick access to the TV's inputs and settings.
+- A clock screensaver that slowly drifts so it can't burn into the screen.
 
-Streaming logins, Chromecast, AirPlay, Bluetooth remotes, and the Play Store all keep working. The scripts refuse to touch the packages behind them.
+## Notes
 
-## How the scripts work
-
-```bash
-TV=192.168.1.50 scripts/survey.sh                                    # read-only baseline
-TV=192.168.1.50 APPLY=1 APK=clean-tv-v0.5.4.apk scripts/install.sh  # installs alongside stock
-```
-
-1. **Survey** the TV with a read-only script that saves a baseline.
-2. **Install** the launcher next to the stock home screen and try it out.
-3. **Hand Home over** to Clean TV, then disable bloat one batch at a time.
-4. **Undo** whenever you want with `restore.sh`. Nothing is ever uninstalled.
-
-## Decisions worth knowing
-
-- **Dry run by default.** Every script that changes the TV only prints what it would do until you add `APPLY=1`.
-- **Brand profiles, not a hardcoded list.** Which packages are safe to disable differs by brand, so that lives in small profile files (`google`, `hisense`, `tcl`). Any other brand gets the `google` baseline, which only touches packages that are the same on every TV.
-- **Protected packages are enforced on every write**, not just listed in docs, so a bad profile can't disable the remote, casting, or the TV's inputs.
-- **The remote's app buttons still work.** With the stock launcher off, the Netflix and YouTube keys go dead. An optional accessibility service brings them back.
-- **Released like a real app.** Signed APKs on GitHub Releases, a changelog, and CI that runs unit tests, Android lint, a release build, and shellcheck on every push.
+- Tiny and light: the whole app is about 115 KB and uses roughly half the memory of the stock home screen.
+- Everything is reversible. The scripts preview their changes first, and one command puts the TV back the way it was.
+- Streaming logins, casting, and remotes all keep working.

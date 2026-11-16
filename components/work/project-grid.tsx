@@ -56,7 +56,7 @@ export function ProjectGrid({ projects }: ProjectGridProps) {
           <SectionLabel>Featured</SectionLabel>
           <div className={`grid items-start gap-4 ${featuredCols}`}>
             {featured.map((p, i) => (
-              <ScrollFadeIn key={p.slug} direction="up" distance={24} delay={i * 0.08}>
+              <ScrollFadeIn key={p.slug} direction="up" distance={24} delay={i * 0.06}>
                 <ProjectCard
                   project={p}
                   index={i + 1}
@@ -79,7 +79,9 @@ export function ProjectGrid({ projects }: ProjectGridProps) {
                 key={p.slug}
                 direction="up"
                 distance={24}
-                delay={(featured.length + i) * 0.08}
+                // Stagger within this section only: these scroll in on their
+                // own, so carrying the featured count over just adds dead time.
+                delay={Math.min(i, 5) * 0.06}
               >
                 <ProjectCard
                   project={p}

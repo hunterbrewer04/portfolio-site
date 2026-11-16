@@ -1,12 +1,11 @@
 ---
 title: "Search Algorithms Visualizer"
-description: "An interactive visualizer for the classical AI search algorithms: eight algorithms across a weighted grid, a state-space graph, and the search tree they generate, with the live frontier and pseudocode alongside every run."
+description: "An interactive visualizer that shows how classic AI search algorithms find their way, step by step."
 tagline: "Watch eight classic search algorithms think, step by step."
-summary: "Eight algorithms (BFS, DFS, depth-limited, iterative deepening, uniform-cost, greedy, A*, and bidirectional) on three views: a paintable weighted grid with a race mode, a state-space graph with presets like the Romania map, and the search tree itself. Plain JavaScript with no build step, checked against a ground-truth Dijkstra across hundreds of random boards."
 highlights:
-  - "Eight algorithms on three views: a weighted grid, a state-space graph, and the live search tree"
-  - "Race mode runs all eight side by side on the same board"
-  - "Checked against a ground-truth Dijkstra with a mutation-tested suite of 2,787 checks"
+  - "Eight classic search algorithms, side by side"
+  - "Draw a maze, explore a map, or watch the search tree grow"
+  - "Runs live right here in the page"
 date: 2026-09-09
 timeline: "Sep 2026"
 status: "Live in the page"
@@ -22,20 +21,16 @@ color: "#fbbf24"
 draft: false
 ---
 
-The Search Algorithms Visualizer shows how the classical AI search algorithms actually explore a problem. Pick an algorithm, press play, and watch the frontier grow, the explored set fill in, and the path come back, with the queue, stack, or priority queue shown live beside it. The frame above is the real thing running in the page.
+The Search Algorithms Visualizer shows how classic AI search algorithms find their way through a problem. Pick an algorithm, press play, and watch it explore step by step until it finds a path. The frame above is the real thing, running in the page.
 
-## Three ways to look at a search
+## What it does
 
-- **Grid.** A weighted pathfinding board. Draw walls, drag the start and goal, paint expensive terrain, or generate a maze. Race mode runs all eight algorithms side by side on the same board.
-- **Graph.** A state-space graph with labelled nodes and weighted edges, including the Romania road map with real distances and a preset with a deliberately bad heuristic, so you can watch A* return a worse path.
-- **Tree.** The search tree the algorithm really generates, growing as it expands. Depth-limited search draws its cutoff line here, and iterative deepening visibly wipes and redraws the tree one level deeper each round.
+- Eight algorithms, from breadth-first search to A*, on the same problems so you can compare them.
+- Three views: a maze-like grid you can draw on, a map of connected cities, and the search tree itself.
+- Race mode runs all eight side by side on one board.
 
-Every run also shows each node's g, h, and f values, a step-by-step trace, and the pseudocode.
+## Notes
 
-## Decisions worth knowing
-
-- **The conventions are switches, not choices made for you.** Textbooks disagree on when to test for the goal and whether to keep an explored set, and both change the answer. Testing on generation, for example, costs uniform-cost search and A* their optimality, and you can watch it happen.
-- **A subtle bug, handled.** A depth-limited search with a naive explored set can miss a goal that is inside the limit. Here the explored set remembers the depth each state was expanded at and re-expands on a shallower arrival.
-- **Verified against ground truth.** A Node harness checks every algorithm against Dijkstra across hundreds of random grids and graphs: optimal algorithms must find the optimal cost, A* must never expand more than uniform-cost, and every path must be valid.
-- **The tests were tested.** Each class of assertion was confirmed to fail against a deliberately broken implementation, including the two easiest mistakes to miss in bidirectional search.
-- **No build step.** Algorithms are generators that yield step events and the views only consume those events, so it runs straight from a file with plain scripts and no dependencies.
+- Switches for the details that textbooks disagree on, so you can see how each one changes the result.
+- Every algorithm is checked against a known-correct answer across hundreds of random boards.
+- No setup at all: it's plain web code that runs straight in the browser.

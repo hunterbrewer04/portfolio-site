@@ -84,9 +84,14 @@ export default async function ProjectPage({ params }: PageProps) {
         </ProjectAccent>
       </ScrollFadeIn>
       {(prev || next) && (
-        <div className="mt-20 border-t border-white/[0.06] pt-10 sm:mt-28">
+        <ScrollFadeIn
+          direction="up"
+          distance={20}
+          amount={0.2}
+          className="mt-20 border-t border-white/[0.06] pt-10 sm:mt-28"
+        >
           <ProjectPager prev={prev} next={next} />
-        </div>
+        </ScrollFadeIn>
       )}
     </div>
   );

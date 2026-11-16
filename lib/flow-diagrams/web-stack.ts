@@ -87,22 +87,22 @@ export const webStackSearch: FlowDiagramDef = {
 
 export const webStackRead: FlowDiagramDef = {
   kicker: "Read",
-  title: "Escalating from cheap extraction to a real browser",
+  title: "Reading a page, cheapest method first",
   nodes: [
-    { id: "client", label: "Agent", sub: "/v1/read", kind: "client", icon: "bot" },
-    { id: "cache", label: "SQLite cache", sub: "sha256-verified", kind: "store", icon: "database" },
-    { id: "policy", label: "Policy checks", sub: "robots · pacing", icon: "shield" },
-    { id: "raw", label: "Raw lane", sub: "SSRF-guarded", icon: "download" },
-    { id: "t1", label: "T1 Trafilatura", sub: "fast extract", icon: "file" },
-    { id: "t3", label: "T3 Crawl4AI", sub: "headless Chromium", icon: "browser" },
-    { id: "t4", label: "T4 Camofox", sub: "real browser", icon: "globe" },
-    { id: "gate", label: "Content gate", sub: "accept / reject", icon: "gauge" },
-    { id: "out", label: "Budget + cite", sub: "trim · citations", icon: "list" },
+    { id: "client", label: "Agent", sub: "asks for a page", kind: "client", icon: "bot" },
+    { id: "cache", label: "Cache", sub: "already read?", kind: "store", icon: "database" },
+    { id: "policy", label: "House rules", sub: "polite by default", icon: "shield" },
+    { id: "raw", label: "Plain files", sub: "quick download", icon: "download" },
+    { id: "t1", label: "Fast reader", sub: "text only", icon: "file" },
+    { id: "t3", label: "Browser", sub: "for modern sites", icon: "browser" },
+    { id: "t4", label: "Full browser", sub: "for the toughest", icon: "globe" },
+    { id: "gate", label: "Quality check", sub: "real content?", icon: "gauge" },
+    { id: "out", label: "Answer", sub: "with sources", icon: "list" },
   ],
-  zones: [{ label: "Tier ladder", nodes: ["t1", "t3", "t4"] }],
+  zones: [{ label: "Step up only if needed", nodes: ["t1", "t3", "t4"] }],
   edges: [
-    { id: "req", from: "client", to: "cache", label: "urls + mode" },
-    { id: "miss", from: "cache", to: "policy", label: "miss" },
+    { id: "req", from: "client", to: "cache", label: "links" },
+    { id: "miss", from: "cache", to: "policy", label: "new" },
     { id: "rawe", from: "policy", to: "raw" },
     { id: "allow", from: "policy", to: "t1" },
     { id: "html", from: "raw", to: "t1" },
@@ -111,44 +111,44 @@ export const webStackRead: FlowDiagramDef = {
     { id: "g1", from: "t1", to: "gate" },
     { id: "g3", from: "t3", to: "gate" },
     { id: "g4", from: "t4", to: "gate" },
-    { id: "acc", from: "gate", to: "out", label: "accepted" },
+    { id: "acc", from: "gate", to: "out", label: "looks good" },
     { id: "resp", from: "out", to: "client" },
   ],
   steps: [
     {
-      title: "Ask for pages, with a budget",
+      title: "Ask for a page",
       caption:
-        "An agent asks for URLs with a mode (lookup, research, or deep) that caps sources, characters, seconds, and tier attempts. URLs are normalized and trackers stripped, so equivalent links share one cache entry.",
+        "An agent asks for one or more links. If a page was read recently, the saved copy comes straight back.",
       path: ["client", "cache"],
     },
     {
-      title: "Check policy before fetching anything",
+      title: "Follow the house rules",
       caption:
-        "Cached rows are served only if their SHA-256 still matches. On a miss: domain blackouts, robots.txt (a disallow is a refusal, never an escalation), per-domain politeness of 2 at a time and 1 s apart, and learned routing that skips tiers known to fail for this domain.",
+        "Before fetching anything new, it checks that the site allows it and paces its requests, so it never hammers anyone's site.",
       path: ["cache", "policy"],
     },
     {
-      title: "A raw lane for plain text",
+      title: "Plain files take a shortcut",
       caption:
-        "Raw files on GitHub, gists, and CDNs get one hardened fetch: every resolved IP checked against private and Tailscale ranges, DNS pinned, redirects re-validated, a 2 MiB streaming cap. HTML goes straight to Trafilatura, so it's only downloaded once.",
+        "Simple text files are downloaded directly, without any page reading at all.",
       path: ["policy", "raw", "t1"],
     },
     {
-      title: "Cheapest tier first",
+      title: "Try the fast way first",
       caption:
-        "Trafilatura pulls the readable text out of the page. A content gate fitted to real measured output then decides: accept, soft-reject a thin stub, or hard-reject a JS shell, a Cloudflare wall, or a 'Loading…' page.",
+        "Most pages are read in a fraction of a second by pulling out just the text. A quality check makes sure real content came back, not a loading screen.",
       path: ["policy", "t1", "gate"],
     },
     {
-      title: "Escalate only when it has to",
+      title: "Step up only when needed",
       caption:
-        "Rejected pages climb the ladder: Crawl4AI renders them in headless Chromium, then a real Camofox browser on a second machine, whose tabs are always closed even if the client disconnects mid-request. A 404, robots block, or rate limit stops the climb instead.",
+        "If the fast way comes up empty, the page is opened in a browser, and for the toughest sites, a full real browser on another machine.",
       path: ["t1", "t3", "t4", "gate"],
     },
     {
-      title: "Cache it, trim it, cite it",
+      title: "Hand back the answer",
       caption:
-        "The full body is cached, and the character budget trims only this response, so a small request can't poison the cache for a big one. Each source returns with its tier and acceptance metadata, and the domain's learned route gets credit for next time.",
+        "The agent gets the page text with its source, and the result is saved so the next request for it is instant.",
       path: ["gate", "out", "client"],
     },
   ],
