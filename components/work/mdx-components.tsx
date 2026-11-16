@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import type { MDXComponents } from "mdx/types";
-import type { ImgHTMLAttributes, VideoHTMLAttributes } from "react";
+import type { ImgHTMLAttributes, ReactNode, VideoHTMLAttributes } from "react";
 import { mdxComponents } from "@/components/blog/mdx-components";
 import { FlowDiagram } from "@/components/work/flow-diagram";
 
@@ -47,6 +47,34 @@ function YouTube({ id, title = "YouTube video" }: { id: string; title?: string }
   );
 }
 
+/**
+ * A row of captioned screenshots that stacks on phones. Props are plain strings
+ * because next-mdx-remote blocks JS expressions in MDX by default:
+ *
+ *   <Gallery>
+ *     <Shot src="/projects/x/a.webp" alt="..." caption="..." />
+ *   </Gallery>
+ */
+function Gallery({ children }: { children: ReactNode }) {
+  return <div className="not-prose my-8 grid grid-cols-1 gap-4 sm:grid-cols-3">{children}</div>;
+}
+
+function Shot({ src, alt, caption }: { src: string; alt: string; caption?: string }) {
+  return (
+    <figure className="flex flex-col gap-2">
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        className="h-auto w-full rounded-lg border border-white/[0.08]"
+      />
+      {caption && (
+        <figcaption className="text-center font-mono text-xs text-neutral-500">{caption}</figcaption>
+      )}
+    </figure>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Exported map — blog components + project media overrides.
 // ---------------------------------------------------------------------------
@@ -57,4 +85,6 @@ export const workMdxComponents: MDXComponents = {
   Video,
   YouTube,
   FlowDiagram,
+  Gallery,
+  Shot,
 };

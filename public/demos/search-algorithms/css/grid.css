@@ -1,0 +1,81 @@
+/* Grid world: the board, the cells and their state animations. */
+
+.world-grid{line-height:0}
+#gridWrap{position:relative;line-height:0}
+#board{display:grid;gap:var(--gap);user-select:none;touch-action:none}
+#overlay{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+#pathLine{
+  fill:none;stroke:var(--path);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;
+  filter:drop-shadow(0 0 6px rgba(251,191,36,.85));opacity:0;
+}
+
+.cell{
+  width:var(--cs);height:var(--cs);border-radius:3px;background:var(--cell);
+  position:relative;transition:background .18s ease;
+  display:flex;align-items:center;justify-content:center;
+}
+.cell .lbl{
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:9px;font-weight:600;
+  color:rgba(255,255,255,.62);position:relative;z-index:3;line-height:1;pointer-events:none;
+}
+.cell.w{background:var(--heavy)}
+.cell.w::before{
+  content:'';position:absolute;inset:2px;border:1px dashed rgba(251,191,36,.42);
+  border-radius:2px;z-index:2;pointer-events:none;
+}
+.cell.wall{background:var(--wall);box-shadow:0 1px 0 rgba(255,255,255,.045) inset;animation:wallIn .18s ease-out}
+.cell.wall::before,.cell.wall .lbl{display:none}
+@keyframes wallIn{from{transform:scale(.72)}to{transform:scale(1)}}
+
+.cell.frontier{background:var(--frontier);animation:fpop .34s cubic-bezier(.18,.9,.3,1)}
+@keyframes fpop{
+  0%{transform:scale(.35);background:#a5f3fc}
+  70%{transform:scale(1.08)}
+  100%{transform:scale(1);background:var(--frontier)}
+}
+.cell.visited{background:var(--visited);animation:vpop .55s cubic-bezier(.2,.85,.3,1)}
+@keyframes vpop{
+  0%{transform:scale(.5);background:var(--visited-hi)}
+  55%{transform:scale(1.1);background:#7c6ce8}
+  100%{transform:scale(1);background:var(--visited)}
+}
+.cell.cutoff{background:var(--cutoff);box-shadow:0 0 0 1px rgba(248,113,113,.5) inset;animation:vpop .5s}
+.cell.path{background:var(--path);animation:ppop .42s cubic-bezier(.2,.9,.25,1) both;z-index:2}
+.cell.path .lbl{color:rgba(0,0,0,.7)}
+@keyframes ppop{
+  0%{transform:scale(.45);box-shadow:0 0 0 0 rgba(251,191,36,.7)}
+  60%{transform:scale(1.25);box-shadow:0 0 16px 3px rgba(251,191,36,.55)}
+  100%{transform:scale(1);box-shadow:0 0 10px 0 rgba(251,191,36,.32)}
+}
+.cell.hl{outline:2px solid #fff;outline-offset:1px;z-index:4}
+/* where the two bidirectional frontiers touched */
+.cell.meet{box-shadow:0 0 0 2px #fff inset,0 0 14px 1px rgba(255,255,255,.55);z-index:4}
+
+.cell.start,.cell.goal{z-index:3}
+.cell.start{background:var(--start);box-shadow:0 0 14px -1px rgba(16,185,129,.65)}
+.cell.goal{background:var(--goal);box-shadow:0 0 14px -1px rgba(244,63,94,.65)}
+.cell.start::after,.cell.goal::after{
+  content:'';position:absolute;inset:0;border-radius:3px;z-index:4;
+  background:rgba(255,255,255,.92);
+  -webkit-mask-position:center;mask-position:center;
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-size:62%;mask-size:62%;
+}
+.cell.start::after{
+  -webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 3l14 9-14 9z'/></svg>");
+  mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 3l14 9-14 9z'/></svg>");
+}
+.cell.goal::after{
+  -webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' fill='none' stroke='black' stroke-width='3'/><circle cx='12' cy='12' r='3'/></svg>");
+  mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' fill='none' stroke='black' stroke-width='3'/><circle cx='12' cy='12' r='3'/></svg>");
+  animation:goalPulse 2.1s ease-in-out infinite;
+}
+@keyframes goalPulse{0%,100%{opacity:1}50%{opacity:.45}}
+.cell.start .lbl,.cell.goal .lbl{display:none}
+
+/* Reduced motion: keep the state colours, drop the movement. */
+@media (prefers-reduced-motion: reduce){
+  .cell,.cell.wall,.cell.frontier,.cell.visited,.cell.cutoff,.cell.path{animation:none}
+  .cell.goal::after{animation:none}
+  #pathLine{filter:none}
+}

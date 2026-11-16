@@ -1,0 +1,249 @@
+/* Search-tree world. Tokens come from css/base.css and are never redefined here. */
+
+/* The world wrapper (.world.world-tree) also matches .world-tree, and this
+   file loads after base.css, so the display:flex below would otherwise keep
+   the tree's bar and empty message showing over the Grid and Graph worlds.
+   Hide the wrapper unless it is the world that is on. */
+.world.world-tree:not(.on){display:none}
+
+.world-tree{
+  /* fills #worldHost whether that is a flex container or a sized block */
+  position:relative;
+  flex:1;
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:10px;
+  min-width:0;
+  min-height:0;
+}
+
+/* ---------- toolbar ---------- */
+.world-tree .tbar{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  flex-wrap:wrap;
+  flex:none;
+  font-size:11px;
+}
+.world-tree .tspacer{flex:1}
+
+.world-tree .tbadge{
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-size:10.5px;letter-spacing:.02em;
+  padding:3px 9px;border-radius:99px;
+  border:1px solid var(--line);color:var(--dim2);
+  background:rgba(255,255,255,.02);
+  white-space:nowrap;
+}
+.world-tree .tbadge.on{
+  color:#fca5a5;
+  border-color:rgba(248,113,113,.42);
+  background:rgba(248,113,113,.10);
+}
+.world-tree .tcount{
+  color:var(--dim2);
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-size:10.5px;
+}
+.world-tree .tmore{
+  display:none;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-size:10.5px;
+  padding:3px 9px;border-radius:99px;
+  color:#fcd34d;border:1px solid rgba(251,191,36,.35);
+  background:rgba(251,191,36,.10);
+}
+.world-tree .tmore.on{display:inline-block}
+.world-tree .thint{color:var(--dim2);font-size:10.5px}
+.world-tree .tfit{
+  /* 44x44 minimum touch target, per the responsive acceptance test */
+  min-width:44px;min-height:44px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.035);
+  border-radius:11px;padding:0 14px;cursor:pointer;
+  font-size:11.5px;font-weight:550;transition:.16s;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.world-tree .tfit:hover{background:rgba(255,255,255,.08);border-color:var(--line)}
+.world-tree .tfit.on{
+  color:#67e8f9;
+  border-color:rgba(34,211,238,.4);
+  background:rgba(34,211,238,.10);
+}
+
+/* ---------- stage ---------- */
+.world-tree .tstage{
+  position:relative;
+  flex:1;min-width:0;
+  min-height:220px;
+  touch-action:none;
+  overscroll-behavior:contain;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:rgba(255,255,255,.014);
+  overflow:hidden;
+}
+.world-tree .tstage::after{
+  content:'';position:absolute;inset:0;pointer-events:none;border-radius:14px;
+  box-shadow:0 0 90px -30px rgba(99,102,241,.5) inset;
+}
+.world-tree .tsvg{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  display:block;
+  cursor:grab;
+  touch-action:none;
+  user-select:none;
+}
+.world-tree .tsvg:active{cursor:grabbing}
+
+.world-tree .tempty{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--dim2);font-size:12px;text-align:center;padding:0 24px;
+  pointer-events:none;
+}
+.world-tree.has-nodes .tempty{display:none}
+
+/* ---------- edges ---------- */
+.world-tree .tedge{
+  fill:none;
+  stroke:rgba(255,255,255,.13);
+  stroke-width:1.25;
+}
+.world-tree .tedge.back{stroke-dasharray:3 3}
+.world-tree .tedge.on{
+  stroke:var(--path);
+  stroke-width:2.4;
+  filter:drop-shadow(0 0 5px rgba(251,191,36,.7));
+}
+
+/* ---------- nodes ---------- */
+.world-tree .tnode .tbox{
+  fill:var(--cell);
+  stroke:rgba(255,255,255,.10);
+  stroke-width:1;
+  transform-box:fill-box;
+  transform-origin:center;
+  transition:fill .18s ease;
+}
+.world-tree .tnode .tlbl{
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-size:9.5px;font-weight:600;
+  fill:rgba(255,255,255,.72);
+  text-anchor:middle;
+  pointer-events:none;
+}
+.world-tree .tnode .tval{
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-size:8.5px;font-weight:600;
+  fill:var(--dim2);
+  text-anchor:middle;
+  pointer-events:none;
+}
+
+.world-tree .tnode{animation:treeIn .34s cubic-bezier(.18,.9,.3,1)}
+@keyframes treeIn{
+  0%{opacity:0}
+  100%{opacity:1}
+}
+
+/* frontier — cyan, the same pop the grid cells use */
+.world-tree .s-frontier .tbox{fill:var(--frontier);stroke:rgba(255,255,255,.22);animation:treePopF .34s cubic-bezier(.18,.9,.3,1)}
+.world-tree .s-frontier .tlbl{fill:rgba(3,18,26,.86)}
+.world-tree .s-frontier .tval{fill:#67e8f9}
+@keyframes treePopF{
+  0%{transform:scale(.35);fill:#a5f3fc}
+  70%{transform:scale(1.1)}
+  100%{transform:scale(1);fill:var(--frontier)}
+}
+
+/* expanded — indigo */
+.world-tree .s-expanded .tbox{fill:var(--visited);stroke:rgba(165,180,252,.32);animation:treePopV .55s cubic-bezier(.2,.85,.3,1)}
+.world-tree .s-expanded .tlbl{fill:#dfe3f5}
+.world-tree .s-expanded .tval{fill:#a5b4fc}
+@keyframes treePopV{
+  0%{transform:scale(.55);fill:var(--visited-hi)}
+  55%{transform:scale(1.12);fill:#7c6ce8}
+  100%{transform:scale(1);fill:var(--visited)}
+}
+
+/* cut off at the depth limit — red, children never generated */
+.world-tree .s-cutoff .tbox{fill:var(--cutoff);stroke:rgba(248,113,113,.55);animation:treePopV .5s}
+.world-tree .s-cutoff .tlbl{fill:#fecdd3}
+.world-tree .s-cutoff .tval{fill:#fb7185}
+
+/* popped but already expanded elsewhere */
+.world-tree .s-stale{opacity:.34}
+.world-tree .s-stale .tbox{fill:var(--cell);stroke-dasharray:3 2}
+
+/* on the solution path — gold */
+.world-tree .s-path .tbox{fill:var(--path);stroke:rgba(251,191,36,.7);animation:treePopP .42s cubic-bezier(.2,.9,.25,1) both}
+.world-tree .s-path .tlbl{fill:rgba(0,0,0,.74)}
+.world-tree .s-path .tval{fill:#fcd34d}
+@keyframes treePopP{
+  0%{transform:scale(.45)}
+  60%{transform:scale(1.24)}
+  100%{transform:scale(1)}
+}
+
+/* backward half of a bidirectional run */
+.world-tree .tnode.back .tbox{stroke:rgba(244,63,94,.45);stroke-dasharray:4 2.5}
+
+/* where the two frontiers touched */
+.world-tree .tnode.meet .tbox{stroke:#fff;stroke-width:2;stroke-dasharray:none}
+
+/* the deepest row a limited search is allowed to reach: these have no future,
+   whether or not they have been popped yet */
+.world-tree .tnode.atlimit:not(.s-path) .tbox{stroke:rgba(248,113,113,.55);stroke-dasharray:2 2}
+
+/* frontier-panel hover: every tree node holding that state lights up */
+.world-tree .tnode.hl .tbox{stroke:#fff;stroke-width:2}
+.world-tree .tnode.hl .tlbl{fill:#fff}
+
+/* ---------- the depth-limit cut ---------- */
+.world-tree .tcut{
+  stroke:#f87171;
+  stroke-width:1.4;
+  stroke-dasharray:7 5;
+  opacity:.85;
+}
+.world-tree .tdead{
+  fill:rgba(248,113,113,.07);
+  stroke:none;
+}
+.world-tree .tcutlbl{
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-size:9px;
+  fill:rgba(248,113,113,.8);
+  letter-spacing:.02em;
+}
+
+/* ---------- small screens ---------- */
+@media (max-width:880px){
+  .world-tree .thint{display:none}
+}
+@media (max-width:719px){
+  .world-tree{padding:8px;gap:6px}
+  .world-tree .tcount{display:none}
+  .world-tree .tstage{border-radius:12px}
+  /* the label shrinks but never below readable, since the cut line is the
+     one thing this view exists to show */
+  .world-tree .tcutlbl{font-size:10px}
+  .world-tree .tnode .tlbl{font-size:10px}
+  .world-tree .tnode .tval{font-size:9px}
+}
+
+/* ---------- motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  .world-tree .tnode,
+  .world-tree .tnode .tbox{animation:none !important}
+  .world-tree .tnode .tbox{transition:none}
+  .world-tree .tfit{transition:none}
+}

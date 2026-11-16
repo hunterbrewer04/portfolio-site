@@ -1,13 +1,16 @@
 ---
 title: "Repo Graph Viewer"
-description: "An interactive code-graph viewer that renders any graphify graph.json in the browser as a 2D canvas or 3D WebGL force graph, colored by community, with search and a node detail panel."
+description: "An interactive map of any codebase, in 2D or 3D, right in the browser."
 tagline: "See any codebase as an interactive 2D or 3D graph."
-summary: "Drop in the graph.json that graphify writes for a repo and walk the codebase by its call graph: hover to see a node's neighbors, click to open its detail panel, search to highlight matches, press G to swap between 2D canvas and 3D WebGL. Fully client-side, statically exported to Cloudflare Pages, with a defensive loader that survives graphify's changing output format and a test suite that pins the contract."
 highlights:
-  - "Renders any graphify graph.json as a force-directed graph, 2D canvas or 3D WebGL, colored by community"
-  - "Hover, click, and search to walk a codebase by its call graph; solid edges are parsed, dashed are inferred"
-  - "Fully client-side static build on Cloudflare Pages, with a loader that tolerates graphify format drift"
+  - "Turns any codebase into an interactive 2D or 3D map"
+  - "Hover, click, and search to explore how the code connects"
+  - "Runs entirely in the browser, live on this site"
 date: 2026-09-20
+status: "Live"
+stats:
+  - { label: "Views", value: "2D and 3D" }
+  - { label: "Backend", value: "None, fully static" }
 tags: ["TypeScript", "Next.js", "React", "WebGL", "Three.js", "d3-force", "Tailwind", "Vitest"]
 github: "https://github.com/hunterbrewer04/repo-graph-viewer"
 demo: "https://graph.hunterbrewer.com"
@@ -18,23 +21,18 @@ color: "#a855f7"
 draft: false
 ---
 
-Repo Graph Viewer turns a codebase into a picture you can explore. It reads the `graph.json` that [graphify](https://github.com/Graphify-Labs/graphify) produces for a repo, where every function, class, and file is a node and every call or import is a link, and draws it as a live force-directed graph in the browser. Related code pulls together into clusters and each cluster gets its own color, so the shape of a project is visible at a glance.
+Repo Graph Viewer turns a codebase into a map you can explore. Every function, class, and file becomes a dot, every call or import becomes a line, and related code naturally clusters together in its own color, so you can see the shape of a project at a glance.
 
-The frame above is the real app running on this portfolio's own code. Pick another example from the header, or drop any `graph.json` onto it.
+The frame above is the real app running on this portfolio's own code. Pick another example from the header, or drop in your own.
 
-## What you can do
+## What it does
 
-- **Switch between 2D and 3D.** The flat view is for reading structure; the 3D view shows the overall shape. Press `G` to toggle.
-- **Follow the connections.** Hover a node to light up everything it touches. Click it for details, then click any neighbor to step through the code one hop at a time.
-- **Search.** Type a name and the matching nodes and their neighbors light up.
-- **Bring your own repo.** Run graphify on any project and drop the result on the page. Five example graphs from my own repos are built in.
+- Shows any codebase as an interactive 2D map or a 3D view. Press `G` to switch.
+- Hover a dot to light up everything it connects to, or click it to step through the code one link at a time.
+- Search by name to find any part of the project instantly.
 
-## How it is built
+## Notes
 
-A Next.js app with no backend. The whole thing is static files hosted on Cloudflare, and the graph itself is drawn by react-force-graph (d3-force for the layout, Three.js for 3D). It works on phones too: the detail panel becomes a bottom sheet, and tapping a node pans it into view.
-
-## Decisions worth knowing
-
-- **It survives format changes.** graphify is under active development and its output keeps shifting. The loader reads every field with a fallback, and a test covers each variation I have hit, so a new format breaks a test instead of the page.
-- **3D only loads when you ask for it.** Three.js is the heaviest dependency, so it stays out of the download until someone switches to 3D.
-- **No theme flash.** Light or dark is applied before the first paint. The page can also be told which theme to use through the URL, which is how it is embedded here in dark to match the rest of the site.
+- Runs entirely in the browser, with no server behind it.
+- The heavy 3D view only loads when you ask for it, so the page stays quick.
+- Works on phones too, with a detail panel that slides up from the bottom.

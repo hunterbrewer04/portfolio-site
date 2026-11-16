@@ -1,0 +1,226 @@
+/* Graph world. Scoped under .world-graph; every colour comes from the tokens in base.css. */
+
+.world-graph{
+  position:relative;
+  width:100%;height:100%;min-height:240px;
+  max-width:100%;overflow:hidden;
+  user-select:none;-webkit-user-select:none;
+  /* set by the world on every layout, so text tracks the container size */
+  --g-label:10.5px; --g-cost:10px; --g-val:9px;
+}
+/* the page shell never scrolls, so the surface owns every touch */
+.world-graph .gsvg{
+  position:absolute;inset:0;width:100%;height:100%;display:block;
+  touch-action:none;-webkit-tap-highlight-color:transparent;
+  cursor:grab;
+}
+.world-graph.dragging .gsvg{ cursor:grabbing; }
+
+/* ---------- pan/zoom controls ---------- */
+.world-graph .gtools{
+  position:absolute;right:10px;top:10px;z-index:2;
+  display:flex;gap:6px;
+}
+.world-graph .gbtn{
+  width:44px;height:44px;flex:none;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--line);border-radius:12px;
+  background:var(--panel);backdrop-filter:blur(10px);
+  color:var(--dim);cursor:pointer;padding:0;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  transition:background .16s ease,color .16s ease,border-color .16s ease;
+}
+.world-graph .gbtn:hover{ background:rgba(255,255,255,.08);border-color:var(--line2, rgba(255,255,255,.13));color:var(--text); }
+.world-graph .gbtn:active{ background:rgba(255,255,255,.12); }
+.world-graph .gbtn svg{ width:17px;height:17px;fill:currentColor;pointer-events:none; }
+.world-graph .gbtn[data-act="fit"]{ opacity:.5; }
+.world-graph.zoomed .gbtn[data-act="fit"]{
+  opacity:1;color:#67e8f9;border-color:rgba(34,211,238,.34);background:rgba(34,211,238,.10);
+}
+
+/* ---------- edges ---------- */
+.world-graph .gedge{
+  stroke:var(--line2, rgba(255,255,255,.13));
+  stroke-width:1.6;stroke-linecap:round;
+  transition:stroke .22s ease,stroke-width .22s ease,opacity .22s ease;
+}
+.world-graph .gedge.is-tree{
+  stroke:var(--visited-hi);stroke-width:2.4;opacity:.8;
+}
+.world-graph .gedge.is-path{
+  stroke:var(--path);stroke-width:2.6;opacity:.45;
+}
+
+.world-graph .gchip{
+  fill:var(--bg2);stroke:var(--line);stroke-width:1;
+}
+.world-graph .gcost{
+  fill:var(--dim);
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-size:var(--g-cost);font-weight:600;
+  text-anchor:middle;pointer-events:none;
+}
+
+/* ---------- the solution stroke, same spirit as the grid overlay ---------- */
+.world-graph .pathline{
+  fill:none;stroke:var(--path);stroke-width:3.4;
+  stroke-linecap:round;stroke-linejoin:round;
+  filter:drop-shadow(0 0 7px rgba(251,191,36,.85));
+  opacity:0;
+}
+
+/* ---------- nodes ---------- */
+.world-graph .gnode .base{ fill:var(--cell); }
+.world-graph .gnode .dot{
+  fill:transparent;
+  stroke:rgba(255,255,255,.10);stroke-width:1.2;
+  transition:fill .18s ease;
+}
+.world-graph .gnode .pop{
+  transform-box:fill-box;transform-origin:center;
+}
+.world-graph .gnode .mark path,
+.world-graph .gnode .mark .pip{ fill:rgba(255,255,255,.92); }
+.world-graph .gnode .mark .ring{ fill:none;stroke:rgba(255,255,255,.92);stroke-width:2; }
+.world-graph .gnode .mark.goal{ animation:gGoalPulse 2.1s ease-in-out infinite; }
+@keyframes gGoalPulse{ 0%,100%{opacity:1} 50%{opacity:.45} }
+
+.world-graph .nlbl{
+  fill:var(--dim);
+  font-family:ui-sans-serif,-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+  font-size:var(--g-label);font-weight:550;letter-spacing:.005em;
+  pointer-events:none;
+  paint-order:stroke;stroke:var(--bg);stroke-width:3.5px;stroke-linejoin:round;
+}
+.world-graph .nval{
+  fill:#a5b4fc;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-size:var(--g-val);font-weight:600;font-variant-numeric:tabular-nums;
+  pointer-events:none;
+  paint-order:stroke;stroke:var(--bg);stroke-width:3.5px;stroke-linejoin:round;
+}
+
+/* ---------- search states ---------- */
+.world-graph .gnode.is-frontier .dot{ fill:var(--frontier);stroke:none; }
+.world-graph .gnode.is-frontier .pop{ animation:gFpop .34s cubic-bezier(.18,.9,.3,1) both; }
+@keyframes gFpop{
+  0%{transform:scale(.35)}
+  70%{transform:scale(1.1)}
+  100%{transform:scale(1)}
+}
+
+.world-graph .gnode.is-visited .dot{ fill:var(--visited);stroke:rgba(129,140,248,.42); }
+.world-graph .gnode.is-visited .nlbl{ fill:var(--text); }
+.world-graph .gnode.is-visited .pop{ animation:gVpop .5s cubic-bezier(.2,.85,.3,1) both; }
+@keyframes gVpop{
+  0%{transform:scale(.55)}
+  55%{transform:scale(1.14)}
+  100%{transform:scale(1)}
+}
+
+.world-graph .gnode.is-cutoff .dot{ fill:var(--cutoff);stroke:rgba(248,113,113,.55);stroke-width:1.6; }
+.world-graph .gnode.is-cutoff .pop{ animation:gVpop .5s cubic-bezier(.2,.85,.3,1) both; }
+
+.world-graph .gnode.is-path .dot{ fill:var(--path);stroke:none; }
+.world-graph .gnode.is-path .nlbl{ fill:var(--text); }
+.world-graph .gnode.is-path .nval{ fill:var(--path); }
+.world-graph .gnode.is-path .pop{
+  animation:gPpop .42s cubic-bezier(.2,.9,.25,1) both;
+  filter:drop-shadow(0 0 9px rgba(251,191,36,.5));
+}
+@keyframes gPpop{
+  0%{transform:scale(.45)}
+  60%{transform:scale(1.28)}
+  100%{transform:scale(1)}
+}
+
+/* stale pop — the entry was already expanded, so it only twitches */
+.world-graph .gnode.is-stale .pop{ animation:gStale .45s ease-out both; }
+@keyframes gStale{
+  0%{transform:scale(1);opacity:1}
+  40%{transform:scale(1.16);opacity:.45}
+  100%{transform:scale(1);opacity:1}
+}
+
+/* bidirectional: the backward frontier wears a dashed ring */
+.world-graph .gnode[data-side="b"].is-frontier .dot{
+  fill:none;stroke:var(--frontier);stroke-width:3;stroke-dasharray:4 3;
+}
+.world-graph .gnode[data-side="b"].is-visited .dot{ stroke-dasharray:4 3;stroke-width:2; }
+
+/* the two frontiers touched here — its own ring, so no state fill can hide it */
+.world-graph .gnode .meetring{
+  display:none;fill:none;
+  stroke:var(--visited-hi);stroke-width:2.5;stroke-dasharray:5 4;
+}
+.world-graph .gnode.is-meet .meetring{ display:block; }
+.world-graph .gnode.is-meet .nlbl{ fill:#fff; }
+.world-graph .gnode.is-meet .pop{
+  animation:gMeet .55s cubic-bezier(.2,.9,.25,1) both;
+  filter:drop-shadow(0 0 10px rgba(139,92,246,.75));
+}
+@keyframes gMeet{
+  0%{transform:scale(1)}
+  45%{transform:scale(1.4)}
+  100%{transform:scale(1)}
+}
+
+/* start and goal keep their identity through every search state — same rule as the grid */
+.world-graph .gnode.is-start .dot{
+  fill:var(--start);stroke:none;filter:drop-shadow(0 0 9px rgba(16,185,129,.6));
+}
+.world-graph .gnode.is-goal .dot{
+  fill:var(--goal);stroke:none;filter:drop-shadow(0 0 9px rgba(244,63,94,.6));
+}
+.world-graph .gnode.is-start .nlbl,
+.world-graph .gnode.is-goal .nlbl{ fill:var(--text);font-weight:650; }
+
+/* frontier-panel hover — last, so it outranks every state above */
+.world-graph .gnode.is-hl .dot{ stroke:#fff;stroke-width:2.6;stroke-dasharray:none; }
+.world-graph .gnode.is-hl .nlbl{ fill:#fff;font-weight:650; }
+
+/* ---------- caption ---------- */
+.world-graph .gcaption{
+  position:absolute;left:14px;bottom:12px;max-width:min(520px,62%);
+  display:flex;flex-direction:column;gap:2px;
+  padding:8px 12px;border:1px solid var(--line);border-radius:11px;
+  background:var(--panel);backdrop-filter:blur(10px);
+  font-size:11px;line-height:1.45;pointer-events:none;
+}
+.world-graph .gcaption b{
+  font-size:11.5px;font-weight:650;letter-spacing:-.01em;color:var(--text);
+}
+.world-graph .gcaption span{ color:var(--dim2); }
+.world-graph .gcaption.warn{
+  border-color:rgba(248,113,113,.34);background:rgba(248,113,113,.07);
+}
+.world-graph .gcaption.warn b{ color:#fca5a5; }
+
+/* ---------- detail tiers ----------
+   Driven by the smallest on-screen gap between two nodes. Rather than let the
+   text pile up when the graph is fitted into a phone, drop the numbers first
+   and then the names; zooming in brings them straight back. */
+.world-graph.compact .nval,
+.world-graph.compact .gchip,
+.world-graph.compact .gcost{ display:none; }
+.world-graph.minimal .gnode:not(.is-start):not(.is-goal) .nlbl{ display:none; }
+.world-graph .gcaption em{ display:none; }
+.world-graph.compact .gcaption em{ display:block;font-style:normal;color:#67e8f9; }
+
+@media (max-width:720px){
+  .world-graph .gtools{ right:8px;top:8px; }
+  .world-graph .gcaption{
+    left:8px;bottom:8px;right:8px;max-width:none;
+    padding:7px 10px;font-size:10.5px;
+  }
+  .world-graph .gcaption span{ display:none; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .world-graph .gnode .pop{ animation:none !important; }
+  .world-graph .gnode .mark.goal{ animation:none; }
+  .world-graph .gnode .dot,
+  .world-graph .gedge{ transition:none; }
+  .world-graph .pathline{ transition:none !important;stroke-dasharray:none !important;stroke-dashoffset:0 !important; }
+  .world-graph .gbtn{ transition:none; }
+}

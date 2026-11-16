@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { ArrowUpRight, Github, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/lib/projects";
+import { TechStack } from "@/components/work/tech-stack";
 
 export interface ProjectCardProps {
   project: Omit<Project, "content">;
@@ -33,10 +34,23 @@ export function ProjectCard({
   variant = "compact",
   expanded,
   onToggle,
-  particleCount = 16,
+  particleCount = 12,
 }: ProjectCardProps) {
-  const { title, description, tagline, summary, highlights, github, demo, slug, color, year } =
-    project;
+  const {
+    title,
+    description,
+    tagline,
+    summary,
+    highlights,
+    github,
+    demo,
+    slug,
+    color,
+    year,
+    tags,
+    cover,
+    coverAlt,
+  } = project;
   const hero = variant === "hero";
   const featured = hero || variant === "featured";
   const reduce = useReducedMotion();
@@ -72,7 +86,7 @@ export function ProjectCard({
   const onCardClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest("a, button")) return;
     onToggle();
-    burst();
+    if (!expanded) burst();
   };
 
   const pill =
@@ -85,14 +99,9 @@ export function ProjectCard({
   return (
     <motion.article
       onClick={onCardClick}
-      onHoverStart={() => {
-        setIsHovered(true);
-        burst();
-      }}
-      onHoverEnd={() => {
-        setIsHovered(false);
-        setParticles([]);
-      }}
+      // The burst is saved for opening a card; on every hover it read as noise.
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
       whileHover={reduce ? undefined : { y: -3 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       data-lit={lit}
@@ -148,7 +157,8 @@ export function ProjectCard({
                 y: Math.sin(rad) * p.distance,
               }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 1.2, ease: "easeOut" }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              onAnimationComplete={() => setParticles((ps) => ps.filter((x) => x.id !== p.id))}
             />
           );
         })}
@@ -190,7 +200,7 @@ export function ProjectCard({
           aria-controls={panelId}
           onClick={() => {
             onToggle();
-            burst();
+            if (!expanded) burst();
           }}
           className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
         >
@@ -233,13 +243,34 @@ export function ProjectCard({
               ? { opacity: 1, height: "auto", marginTop: 20 }
               : { opacity: 0, height: 0, marginTop: 0 }
           }
-          transition={{ duration: reduce ? 0 : 0.4, ease: "easeInOut" }}
+          transition={
+            reduce
+              ? { duration: 0 }
+              : {
+                  height: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+                  marginTop: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+                  // fade in once the panel has room, fade out before it closes
+                  opacity: { duration: 0.25, delay: expanded ? 0.12 : 0 },
+                }
+          }
           className="w-full overflow-hidden"
         >
           <div
             className="flex flex-col items-center gap-5 border-t pt-5"
             style={{ borderColor: `${color}33` }}
           >
+            {cover && (
+              // eslint-disable-next-line @next/next/no-img-element -- static export, no next/image
+              <img
+                src={cover}
+                alt={coverAlt ?? `${title} screenshot`}
+                loading="lazy"
+                className={cn(
+                  "h-auto w-full rounded-lg border border-white/[0.08]",
+                  hero ? "max-w-xl" : "max-w-md",
+                )}
+              />
+            )}
             {panelText && (
               <p className={cn("text-sm leading-relaxed text-neutral-300", hero ? "max-w-xl" : "max-w-md")}>
                 {panelText}
@@ -263,6 +294,9 @@ export function ProjectCard({
                   </li>
                 ))}
               </ul>
+            )}
+            {tags.length > 0 && (
+              <TechStack tags={tags} color={color} max={5} size="sm" className="justify-center" />
             )}
             <div className="flex flex-wrap justify-center gap-2">
               <Link

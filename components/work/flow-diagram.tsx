@@ -87,6 +87,9 @@ const INSTANT = { duration: 0 } as const;
 
 const noopSubscribe = () => () => {};
 
+/** Pill width for an uppercase 8.5px mono zone label with letter spacing. */
+const zoneLabelWidth = (label: string) => label.length * 6 + 14;
+
 export function FlowDiagram({ id }: { id: string }) {
   const def = getFlowDiagram(id);
   // Throwing surfaces a typo'd id as a build failure instead of a silent gap.
@@ -346,15 +349,6 @@ function FlowDiagramView({ def }: { def: FlowDiagramDef }) {
                 stroke="rgba(255,255,255,0.1)"
                 strokeDasharray="4 4"
               />
-              <text
-                x={z.x + 10}
-                y={z.y + 12}
-                fontSize="9"
-                letterSpacing="0.08em"
-                className="fill-neutral-500 font-mono uppercase"
-              >
-                {z.label}
-              </text>
             </motion.g>
           ))}
 
@@ -419,6 +413,40 @@ function FlowDiagramView({ def }: { def: FlowDiagramDef }) {
                   </motion.g>
                 )}
               </g>
+            );
+          })}
+
+          {/* Zone labels sit above the edges on a small pill, tucked into the
+              zone's top-right corner, so a line passing through never strikes
+              through the text. */}
+          {geo.zones.map((z) => {
+            const w = zoneLabelWidth(z.label);
+            return (
+              <motion.g
+                key={`label-${z.label}`}
+                initial={{ opacity: 0 }}
+                animate={seen ? { opacity: 1 } : undefined}
+                transition={reduce ? INSTANT : { duration: 0.6, delay: 0.3 }}
+              >
+                <rect
+                  x={z.x + z.w - w - 8}
+                  y={z.y + 3}
+                  width={w}
+                  height="14"
+                  rx="7"
+                  fill="#0b0b0c"
+                />
+                <text
+                  x={z.x + z.w - 8 - w / 2}
+                  y={z.y + 13}
+                  fontSize="8.5"
+                  letterSpacing="0.08em"
+                  textAnchor="middle"
+                  className="fill-neutral-500 font-mono uppercase"
+                >
+                  {z.label}
+                </text>
+              </motion.g>
             );
           })}
 

@@ -2,70 +2,70 @@ import type { FlowDiagramDef } from "@/lib/flow-diagrams/types";
 
 export const mediaWatchPipeline: FlowDiagramDef = {
   kicker: "Pipeline",
-  title: "From a link to a structured report",
+  title: "From a link to a report",
   nodes: [
-    { id: "agent", label: "Agent / CLI", sub: "watch_video · mw", kind: "client", icon: "bot" },
-    { id: "fetch", label: "Fetch", sub: "yt-dlp ≤ 720p", icon: "download" },
-    { id: "cache", label: "Item cache", sub: "items/{key}/", kind: "store", icon: "database" },
-    { id: "proxy", label: "Proxy encode", sub: "ffmpeg · 480p", icon: "scissors" },
-    { id: "model", label: "OpenRouter", sub: "Gemini · video in", kind: "external", icon: "sparkles" },
-    { id: "fallback", label: "Fallback model", sub: "other provider", kind: "external", icon: "sparkles" },
-    { id: "validate", label: "Validate", sub: "pydantic Report", icon: "shield" },
-    { id: "usage", label: "Usage log", sub: "SQLite · cost", kind: "store", icon: "list" },
+    { id: "agent", label: "Agent", sub: "link + question", kind: "client", icon: "bot" },
+    { id: "fetch", label: "Download", sub: "once", icon: "download" },
+    { id: "cache", label: "Saved copy", sub: "reused later", kind: "store", icon: "database" },
+    { id: "proxy", label: "Shrink", sub: "fits one request", icon: "scissors" },
+    { id: "model", label: "AI model", sub: "watches the video", kind: "external", icon: "sparkles" },
+    { id: "fallback", label: "Backup model", sub: "if needed", kind: "external", icon: "sparkles" },
+    { id: "validate", label: "Check", sub: "well-formed report", icon: "shield" },
+    { id: "usage", label: "Cost log", sub: "every call", kind: "store", icon: "list" },
   ],
   edges: [
-    { id: "req", from: "agent", to: "fetch", label: "URL + question" },
-    { id: "src", from: "fetch", to: "cache", label: "source.mp4" },
-    { id: "probe", from: "fetch", to: "proxy", label: "ffprobe" },
-    { id: "proxyout", from: "proxy", to: "cache", label: "proxy.mp4" },
-    { id: "call", from: "proxy", to: "model", label: "base64 video" },
-    { id: "fb", from: "model", to: "fallback", label: "if it can help" },
-    { id: "json", from: "model", to: "validate", label: "strict JSON" },
+    { id: "req", from: "agent", to: "fetch", label: "link" },
+    { id: "src", from: "fetch", to: "cache", label: "video" },
+    { id: "probe", from: "fetch", to: "proxy" },
+    { id: "proxyout", from: "proxy", to: "cache", label: "smaller copy" },
+    { id: "call", from: "proxy", to: "model", label: "whole clip" },
+    { id: "fb", from: "model", to: "fallback", label: "if needed" },
+    { id: "json", from: "model", to: "validate", label: "report" },
     { id: "fbjson", from: "fallback", to: "validate" },
-    { id: "log", from: "validate", to: "usage", label: "cost + report" },
+    { id: "log", from: "validate", to: "usage", label: "cost" },
     { id: "ret", from: "usage", to: "agent", label: "report" },
   ],
   steps: [
     {
       title: "Hand it a link",
       caption:
-        "An agent calls watch_video (or you run mw watch) with a URL or a local file and an optional question. Tracking parameters are stripped, so different share links to the same video hit the same cache entry.",
+        "An agent passes along a video link, or a file, and an optional question like \"what's the recipe?\"",
       path: ["agent", "fetch"],
     },
     {
       title: "Download once",
       caption:
-        "yt-dlp grabs a ≤720p copy and skips livestreams and anything over the length cap before downloading a byte. Local files are fingerprinted by path, size, mtime, and head/tail bytes instead of being copied.",
+        "The video is downloaded and saved, so asking about it again later doesn't download it twice.",
       path: ["fetch", "cache"],
     },
     {
-      title: "Shrink to fit one request",
+      title: "Shrink it to fit",
       caption:
-        "ffmpeg re-encodes to a 480p short side, 15 fps, and mono audio. If it's still over 14 MiB it re-encodes at a higher CRF, because 14 MiB base64-encodes to ~19 MB — just under Gemini's inline limit.",
+        "The clip is made just small enough to send to the AI in a single request, without losing what matters.",
       path: ["fetch", "proxy", "cache"],
     },
     {
       title: "Actually watch it",
       caption:
-        "The whole clip goes inline as a base64 data URL in a single OpenRouter request, with a strict JSON schema that the routed provider is required to support.",
+        "A video-capable AI model watches the whole clip, sound included, not just a few still frames.",
       path: ["proxy", "model"],
     },
     {
-      title: "Validate the report",
+      title: "Check the report",
       caption:
-        "Pydantic checks the response: a timestamped timeline, verbatim on-screen text, speech, audio, notable moments, and a list of what the model wasn't sure about. Malformed JSON gets one retry.",
+        "The answer comes back as a timestamped report of what was seen, said, and heard, and it's checked before it's used.",
       path: ["model", "validate"],
     },
     {
-      title: "Fall back only when it helps",
+      title: "A backup when it helps",
       caption:
-        "If the primary model still fails, a different model gets one attempt — unless the error was a bad key, no credits, or a too-large file, where switching models can't help.",
+        "If the first model fails, a different one gets a try, but only when switching could actually fix the problem.",
       path: ["model", "fallback", "validate"],
     },
     {
-      title: "Report back, log the real cost",
+      title: "Report back",
       caption:
-        "Every paid attempt, failed ones included, is logged to SQLite with OpenRouter's exact cost. The agent gets the report back flagged as untrusted content, so it can't follow instructions hidden in a video.",
+        "The agent gets its report, and the exact cost of the call is logged so spending is never a surprise.",
       path: ["validate", "usage", "agent"],
     },
   ],

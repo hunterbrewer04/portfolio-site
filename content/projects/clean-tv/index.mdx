@@ -1,0 +1,45 @@
+---
+title: "Clean TV"
+description: "An ad-free home screen for Google TV and Android TV, with simple, undoable cleanup scripts."
+tagline: "An ad-free home screen for Google TV, with reversible debloat scripts."
+highlights:
+  - "A calm, ad-free home screen for Google TV"
+  - "About 115 KB, using roughly half the memory of the stock home"
+  - "Cleanup scripts that preview first and undo with one command"
+date: 2026-10-27
+timeline: "Oct 2026"
+status: "Released, v0.5.4"
+stats:
+  - { label: "APK size", value: "~115 KB" }
+  - { label: "RAM vs stock", value: "~55-75 MB vs ~150" }
+tags: ["Kotlin", "Android TV", "ADB", "Bash", "Gradle", "GitHub Actions"]
+github: "https://github.com/hunterbrewer04/clean-tv"
+cover: "/projects/clean-tv/home.webp"
+coverAlt: "Clean TV home screen on a TCL Google TV: clock, greeting, and a grid of app banners"
+featured: true
+order: 2
+color: "#f97316"
+draft: false
+---
+
+Clean TV replaces the ad-filled Google TV home screen with a calm one: a clock and greeting over a grid of the apps you actually use. It comes with a set of simple, undoable scripts that switch off the apps the TV came preloaded with.
+
+Every screenshot here is real, pulled from a TCL Google TV. The app is free to download from [GitHub Releases](https://github.com/hunterbrewer04/clean-tv/releases/latest).
+
+<Gallery>
+  <Shot src="/projects/clean-tv/app-menu.webp" alt="App menu with Move and Uninstall" caption="Hold OK on an app" />
+  <Shot src="/projects/clean-tv/inputs.webp" alt="Inputs menu listing HDMI 1-3, AV, Live TV and All sources" caption="Inputs menu" />
+  <Shot src="/projects/clean-tv/screensaver.webp" alt="Clock screensaver" caption="Clock screensaver" />
+</Gallery>
+
+## What it does
+
+- A home screen with no ads, no tracking, and no internet access of its own.
+- Your apps, in the order you choose, plus quick access to the TV's inputs and settings.
+- A clock screensaver that slowly drifts so it can't burn into the screen.
+
+## Notes
+
+- Tiny and light: the whole app is about 115 KB and uses roughly half the memory of the stock home screen.
+- Everything is reversible. The scripts preview their changes first, and one command puts the TV back the way it was.
+- Streaming logins, casting, and remotes all keep working.

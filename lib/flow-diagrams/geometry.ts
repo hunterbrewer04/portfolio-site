@@ -6,8 +6,8 @@ export type Variant = "wide" | "narrow";
 // column (~790px); `narrow` renders ~1:1 on a 390px phone, so text stays legible
 // instead of being scaled down.
 const METRICS = {
-  wide: { width: 760, rowH: 100, maxNodeW: 172, gutterX: 40, nodeH: 50, padY: 6 },
-  narrow: { width: 340, rowH: 88, maxNodeW: 154, gutterX: 14, nodeH: 48, padY: 6 },
+  wide: { width: 760, rowH: 122, maxNodeW: 172, gutterX: 40, nodeH: 50, padY: 6 },
+  narrow: { width: 340, rowH: 100, maxNodeW: 154, gutterX: 14, nodeH: 48, padY: 6 },
 } as const;
 
 const ZONE_PAD = 10;
