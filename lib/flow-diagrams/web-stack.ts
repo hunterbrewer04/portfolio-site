@@ -150,6 +150,7 @@ export const webStackRead: FlowDiagramDef = {
     narrow: {
       cols: 2,
       rows: 5,
+      inset: 20,
       edgeLabels: false,
       at: {
         client: [0, 0],
@@ -162,10 +163,11 @@ export const webStackRead: FlowDiagramDef = {
         t4: [1, 4],
       },
       sides: {
-        g1: ["left", "right"],
+        // three separate ways into the quality check: from above, beside, below
+        g1: ["left", "top"],
         g3: ["left", "right"],
-        g4: ["left", "right"],
-        acc: ["top", "bottom"],
+        g4: ["left", "bottom"],
+        acc: ["left", "left"],
         resp: ["top", "bottom"],
       },
     },
