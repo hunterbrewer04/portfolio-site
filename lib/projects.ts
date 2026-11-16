@@ -149,7 +149,11 @@ export function getAdjacentProjects(slug: string): {
   if (i === -1) return {};
   const pick = (p?: Project): ProjectNeighbor | undefined =>
     p ? { slug: p.slug, title: p.title, color: p.color, blurb: p.tagline ?? p.description } : undefined;
-  return { prev: pick(list[i - 1]), next: pick(list[i + 1]) };
+  // Wrap around the ends so every page offers both directions.
+  if (list.length < 2) return {};
+  const at = (n: number) => list[(n + list.length) % list.length];
+  if (list.length === 2) return { next: pick(at(i + 1)) };
+  return { prev: pick(at(i - 1)), next: pick(at(i + 1)) };
 }
 
 /** Cached read of a single project; throws on a missing file. */
