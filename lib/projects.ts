@@ -3,6 +3,11 @@ import path from "path";
 import { cache } from "react";
 import matter from "gray-matter";
 
+export interface ProjectStat {
+  label: string;
+  value: string;
+}
+
 export interface Project {
   slug: string;
   title: string;
@@ -19,7 +24,12 @@ export interface Project {
   featured: boolean;
   order?: number; // optional manual position; lower sorts first, ahead of unordered projects
   color: string; // normalized 6-digit hex, default "#6366f1"
-  cover?: string;
+  cover?: string; // image path under /public, shown as the hero visual and in the card panel
+  coverAlt?: string; // alt text for the cover; falls back to "<title> screenshot"
+  status?: string; // facts row: e.g. "Live", "In daily use", "Source private"
+  role?: string; // facts row: e.g. "Solo build"
+  timeline?: string; // facts row: e.g. "Sep to Oct 2026"
+  stats: ProjectStat[]; // facts row: 0-3 short numbers, e.g. { label: "Tests", value: "40" }
   content: string; // MDX body (the Overview)
   draft: boolean;
 }
@@ -29,6 +39,15 @@ const PROJECTS_DIR = path.join(process.cwd(), "content/projects");
 // 6-digit hex only — the card/tree/viewer string-concatenate alpha onto this
 // value (e.g. `${color}66`), so 3-digit / rgb() / named colors must be rejected.
 const HEX6 = /^#[0-9a-fA-F]{6}$/;
+
+/** Read `stats` as [{ label, value }], dropping malformed entries. */
+function parseStats(value: unknown): ProjectStat[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((s): s is Record<string, unknown> => typeof s === "object" && s !== null)
+    .map((s) => ({ label: String(s.label ?? ""), value: String(s.value ?? "") }))
+    .filter((s) => s.label && s.value);
+}
 
 /** Normalize a frontmatter date (Date | string) to "YYYY-MM-DD", mirroring lib/blog.ts. */
 function normalizeDate(value: unknown): string {
@@ -62,6 +81,11 @@ function parseProject(slug: string): Project {
     order: typeof data.order === "number" ? data.order : undefined,
     color: HEX6.test(colorRaw) ? colorRaw : "#6366f1",
     cover: data.cover != null ? String(data.cover) : undefined,
+    coverAlt: data.coverAlt != null ? String(data.coverAlt) : undefined,
+    status: data.status != null ? String(data.status) : undefined,
+    role: data.role != null ? String(data.role) : undefined,
+    timeline: data.timeline != null ? String(data.timeline) : undefined,
+    stats: parseStats(data.stats),
     content,
     draft: Boolean(data.draft),
   };
@@ -108,6 +132,21 @@ export function getAllProjects(): Project[] {
 /** ALL slugs including drafts (feeds generateStaticParams). */
 export function getAllProjectSlugs(): string[] {
   return readAllProjects().map((project) => project.slug);
+}
+
+/**
+ * The published projects either side of `slug` in /work order, for the
+ * previous/next links at the foot of a project page. No wraparound.
+ */
+export function getAdjacentProjects(slug: string): {
+  prev?: Pick<Project, "slug" | "title" | "color">;
+  next?: Pick<Project, "slug" | "title" | "color">;
+} {
+  const list = getAllProjects();
+  const i = list.findIndex((p) => p.slug === slug);
+  if (i === -1) return {};
+  const pick = (p?: Project) => (p ? { slug: p.slug, title: p.title, color: p.color } : undefined);
+  return { prev: pick(list[i - 1]), next: pick(list[i + 1]) };
 }
 
 /** Cached read of a single project; throws on a missing file. */

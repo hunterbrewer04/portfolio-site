@@ -1,0 +1,508 @@
+/* Design tokens, shell chrome, panels and footer controls.
+   Every world file styles itself with these tokens and never redefines them.
+
+   Layout is a fixed full-viewport shell: the page itself never scrolls, only
+   regions inside it do. Three layouts share it — desktop (>=1024px), a compact
+   two-column tablet layout (720-1023px), and a single-column phone layout
+   (<720px) where the panel and the options become bottom sheets. */
+
+:root{
+  --bg:#080a0f;
+  --bg2:#0d1017;
+  --panel:rgba(255,255,255,.028);
+  --panel2:rgba(255,255,255,.05);
+  --line:rgba(255,255,255,.075);
+  --line2:rgba(255,255,255,.13);
+  --text:#e8ebf3;
+  --dim:#98a1b8;
+  --dim2:#6b748c;
+
+  --cell:#161a25;
+  --wall:#04060b;
+  --frontier:#22d3ee;
+  --visited:rgba(129,140,248,.30);
+  --visited-hi:#8b5cf6;
+  --cutoff:rgba(248,113,113,.26);
+  --path:#fbbf24;
+  --start:#10b981;
+  --goal:#f43f5e;
+  --heavy:rgba(251,191,36,.10);
+
+  --gap:2px;
+  --cs:22px;
+  --r:10px;
+
+  /* Measured at runtime by js/ui/app.js so the phone sheets sit correctly. */
+  --barH:0px;
+  --collapsedH:0px;
+  --safeB:env(safe-area-inset-bottom, 0px);
+  --safeT:env(safe-area-inset-top, 0px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:
+    radial-gradient(1100px 600px at 12% -8%, rgba(99,102,241,.14), transparent 62%),
+    radial-gradient(900px 520px at 92% 8%, rgba(34,211,238,.10), transparent 60%),
+    radial-gradient(800px 600px at 60% 108%, rgba(251,191,36,.05), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font-family:ui-sans-serif,-apple-system,"SF Pro Text","Segoe UI",system-ui,Inter,sans-serif;
+  font-size:13px;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  overscroll-behavior:none;
+  -webkit-text-size-adjust:100%;
+}
+button,input,select{font:inherit;color:inherit}
+button{touch-action:manipulation}
+::selection{background:rgba(34,211,238,.3)}
+
+/* ---------- shell ---------- */
+#app{display:flex;flex-direction:column;height:100dvh;padding:14px;gap:12px;overflow:hidden}
+
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex:none}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand h1{
+  font-size:16px;font-weight:650;letter-spacing:-.015em;white-space:nowrap;
+  background:linear-gradient(92deg,#e8ebf3,#a5b4fc 42%,#67e8f9);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.brand small{color:var(--dim2);font-size:11.5px;white-space:nowrap}
+.spacer{flex:1}
+.grp{display:flex;align-items:center;gap:10px}
+
+.seg{display:flex;gap:3px;padding:3px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.025);flex:none}
+.seg button{
+  border:0;background:transparent;color:var(--dim);padding:6px 13px;border-radius:8px;
+  font-size:12px;font-weight:550;cursor:pointer;transition:.16s;letter-spacing:.01em;
+  white-space:nowrap;
+}
+.seg button:hover{color:var(--text)}
+.seg button.on{background:rgba(255,255,255,.10);color:#fff;box-shadow:0 1px 0 rgba(255,255,255,.09) inset}
+.seg.sm button{padding:4px 10px;font-size:11px;font-weight:500}
+.seg.off{display:none}
+#modeRace .narrow{display:none}
+
+/* ---------- algorithm picker ---------- */
+/* Eight algorithms is too many for one strip on a desktop, so they sit in two
+   labelled rows driven by each entry's `group`. On a phone the whole thing
+   flattens into one scroll-snapped strip; see the phone block below. */
+#algoTabs{display:flex;flex-direction:column;gap:7px;flex:none}
+.algogroup{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.algogroup > .glabel{
+  color:var(--dim2);font-size:9.5px;text-transform:uppercase;letter-spacing:.09em;
+  width:74px;flex:none;text-align:right;
+}
+.pillrow{display:flex;gap:7px;flex-wrap:wrap;min-width:0}
+.pill{
+  position:relative;border:1px solid var(--line);background:rgba(255,255,255,.022);
+  color:var(--dim);padding:8px 15px;border-radius:11px;cursor:pointer;
+  font-size:12.5px;font-weight:550;transition:.18s;overflow:hidden;letter-spacing:.005em;
+  white-space:nowrap;
+}
+.pill span.k{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:10px;opacity:.45;margin-right:7px}
+.pill:hover{color:var(--text);border-color:var(--line2);transform:translateY(-1px)}
+.pill.on{color:#fff;border-color:transparent;background:linear-gradient(140deg,rgba(99,102,241,.42),rgba(34,211,238,.24));box-shadow:0 6px 22px -8px rgba(99,102,241,.85),0 0 0 1px rgba(165,180,252,.28) inset}
+.pill.on span.k{opacity:.7}
+.pill[disabled]{
+  opacity:.34;cursor:not-allowed;background:repeating-linear-gradient(
+    -45deg,rgba(255,255,255,.02) 0 5px,transparent 5px 10px);
+}
+.pill[disabled]:hover{color:var(--dim);border-color:var(--line);transform:none}
+
+/* ---------- main ---------- */
+main{flex:1;min-height:0;display:flex;gap:12px}
+#worldHost{
+  flex:1;min-width:0;min-height:0;position:relative;overflow:hidden;
+  border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.015);
+}
+#worldHost::after{
+  content:'';position:absolute;inset:0;pointer-events:none;border-radius:16px;z-index:5;
+  box-shadow:0 0 90px -30px rgba(99,102,241,.5) inset;
+}
+/* One world visible at a time, full width. Every world gets its own wrapper so
+   toggling is a display flip and nothing has to be torn down. */
+.world{
+  position:absolute;inset:0;display:none;
+  align-items:center;justify-content:center;overflow:hidden;
+}
+.world.on{display:flex}
+
+/* ---------- side panel ---------- */
+aside{
+  width:352px;flex:none;display:flex;flex-direction:column;gap:10px;min-height:0;
+}
+#panelHandle{display:none}
+.card{
+  border:1px solid var(--line);border-radius:14px;background:var(--panel);
+  padding:14px;backdrop-filter:blur(10px);
+}
+.card h2{
+  font-size:12.5px;font-weight:650;letter-spacing:-.01em;margin-bottom:6px;display:flex;align-items:center;gap:8px;
+}
+.dot{width:7px;height:7px;border-radius:99px;background:var(--frontier);box-shadow:0 0 10px var(--frontier);flex:none}
+#algoDesc{color:var(--dim);line-height:1.55;font-size:12px}
+.props{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;margin-top:11px;padding-top:11px;border-top:1px solid var(--line)}
+.props dt{color:var(--dim2);font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+.props dd{font-size:11.5px;color:var(--text)}
+.props dd.mono{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:11px;color:#a5b4fc}
+.yes{color:#34d399}.no{color:#fb7185}.maybe{color:#fbbf24}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;flex:none}
+.stat{background:#0c0f16;padding:10px 11px}
+.stat b{display:block;font-size:18px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat i{display:block;font-style:normal;color:var(--dim2);font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;margin-top:3px}
+.stat.s-exp b{color:#a5b4fc}
+.stat.s-fro b{color:#67e8f9}
+.stat.s-cost b{color:#fbbf24}
+#stStatus{font-size:12.5px;font-weight:600}
+
+.tabbed{flex:1;min-height:0;display:flex;flex-direction:column;padding:0;overflow:hidden}
+.tabbar{display:flex;gap:2px;padding:8px 8px 0;border-bottom:1px solid var(--line);flex:none}
+.tabbar button{
+  border:0;background:transparent;color:var(--dim2);padding:7px 12px;border-radius:8px 8px 0 0;
+  cursor:pointer;font-size:11.5px;font-weight:550;position:relative;transition:.15s;
+}
+.tabbar button:hover{color:var(--text)}
+.tabbar button.on{color:#fff;background:rgba(255,255,255,.05)}
+.tabbar button.on::after{content:'';position:absolute;left:10px;right:10px;bottom:-1px;height:2px;border-radius:2px;background:linear-gradient(90deg,#818cf8,#22d3ee)}
+.pane{display:none;flex:1;min-height:0;overflow:auto;padding:11px 12px;-webkit-overflow-scrolling:touch}
+.pane.on{display:block}
+
+#frontierHead{color:var(--dim2);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px}
+.frow{
+  display:flex;align-items:center;gap:8px;padding:4px 7px;border-radius:7px;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:11px;cursor:default;
+  border:1px solid transparent;
+}
+.frow:hover{background:rgba(255,255,255,.055);border-color:var(--line)}
+.frow .n{color:var(--dim2);width:22px;text-align:right;flex:none}
+.frow .c{color:#67e8f9;width:78px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow .kv{color:var(--dim);display:flex;gap:9px;min-width:0}
+.frow .kv b{color:#fbbf24;font-weight:600}
+.frow.next{background:rgba(34,211,238,.10);border-color:rgba(34,211,238,.32)}
+.frow.next .n{color:#67e8f9}
+.more{color:var(--dim2);font-size:11px;padding:6px 7px}
+
+#logList{display:flex;flex-direction:column;gap:1px;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:11px}
+.lrow{padding:3px 6px;border-radius:6px;color:var(--dim);display:flex;gap:8px;line-height:1.45}
+.lrow .t{flex:none;font-weight:600;width:56px}
+.lrow.expand .t{color:#a5b4fc}
+.lrow.push .t{color:#67e8f9}
+.lrow.skip{opacity:.55}
+.lrow.skip .t{color:var(--dim2)}
+.lrow.cut .t{color:#fb7185}
+.lrow.info .t{color:#c084fc}
+.lrow.info{background:rgba(192,132,252,.09)}
+.lrow.goal{background:rgba(251,191,36,.12);color:#fde68a}
+.lrow.goal .t{color:#fbbf24}
+.lrow.fail{background:rgba(244,63,94,.12);color:#fecdd3}
+.lrow.fail .t{color:#fb7185}
+
+pre#codeBlock{
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:11px;line-height:1.72;
+  color:#cdd4e6;white-space:pre;
+}
+#codeBlock .kw{color:#c084fc}
+#codeBlock .fn{color:#67e8f9}
+#codeBlock .op{color:#fbbf24}
+#codeBlock .cm{color:var(--dim2);font-style:italic}
+
+/* ---------- controls ---------- */
+footer{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:none;
+  border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:10px 12px;
+  backdrop-filter:blur(10px);
+}
+/* The options group is inline in the footer everywhere except the phone, where
+   it turns into a sheet. display:contents keeps the wrapper out of the layout. */
+#optionsGroup{display:contents}
+.sheetHead{display:none}
+#btnOptions{display:none}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);
+  background:rgba(255,255,255,.035);border-radius:10px;padding:8px 13px;cursor:pointer;
+  font-size:12px;font-weight:550;transition:.16s;white-space:nowrap;
+}
+.btn:hover{background:rgba(255,255,255,.08);border-color:var(--line2);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn svg{width:13px;height:13px;fill:currentColor;flex:none}
+.btn.primary{
+  border-color:transparent;color:#03121a;font-weight:650;
+  background:linear-gradient(140deg,#67e8f9,#818cf8);
+  box-shadow:0 6px 20px -8px rgba(103,232,249,.9);
+}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent}
+.divider{width:1px;height:24px;background:var(--line);flex:none}
+.divider.off{display:none}
+
+.ctl{display:flex;align-items:center;gap:9px;font-size:11.5px;color:var(--dim)}
+.ctl label{color:var(--dim2);text-transform:uppercase;letter-spacing:.07em;font-size:10px}
+.ctl output{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--text);font-size:11px;min-width:56px}
+.ctl.off{display:none}
+/* A convention switch plus the one line that says what it means. */
+.ctl.stack{flex-direction:column;align-items:flex-start;gap:3px}
+.ctl.stack .row{display:flex;align-items:center;gap:9px}
+.ctl .note{
+  color:var(--dim2);font-size:9.5px;line-height:1.35;max-width:300px;letter-spacing:.005em;
+  min-height:26px;      /* two lines, so switching the text never reflows the board */
+}
+
+select{
+  border:1px solid var(--line);background:rgba(255,255,255,.035);border-radius:9px;
+  padding:6px 9px;font-size:11.5px;cursor:pointer;outline:none;max-width:190px;
+}
+select:hover{border-color:var(--line2)}
+select option{background:#12161f;color:var(--text)}
+
+/* The visible track is painted as a background image, so the input's own box can
+   grow into a real touch target without the bar itself getting fat. */
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:118px;height:16px;outline:none;
+  background-color:transparent;
+  background-image:linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,.14));
+  background-size:100% 4px;background-position:center;background-repeat:no-repeat;
+  touch-action:manipulation;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:99px;cursor:pointer;
+  background:linear-gradient(140deg,#a5b4fc,#67e8f9);box-shadow:0 0 0 3px rgba(103,232,249,.16);
+}
+input[type=range]::-moz-range-thumb{
+  width:14px;height:14px;border:0;border-radius:99px;cursor:pointer;
+  background:linear-gradient(140deg,#a5b4fc,#67e8f9);
+}
+
+.switch{display:inline-flex;align-items:center;gap:7px;cursor:pointer;user-select:none;font-size:11.5px;color:var(--dim)}
+.switch input{display:none}
+.switch .track{width:30px;height:17px;border-radius:99px;background:rgba(255,255,255,.13);position:relative;transition:.18s;flex:none}
+.switch .track::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:99px;background:#fff;transition:.18s}
+.switch input:checked + .track{background:linear-gradient(120deg,#818cf8,#22d3ee)}
+.switch input:checked + .track::after{transform:translateX(13px)}
+
+#terrainWrap.off,#showGWrap.off,#speedWrap.off{display:none}
+
+.legend{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:10.5px;color:var(--dim2)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+.hint{color:var(--dim2);font-size:10.5px;flex:none}
+kbd{
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:10px;padding:1px 5px;border-radius:5px;
+  border:1px solid var(--line2);background:rgba(255,255,255,.05);color:var(--dim);
+}
+
+#scrim{
+  position:fixed;inset:0;z-index:50;background:rgba(3,5,9,.62);
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+body.opts-open #scrim{opacity:1;pointer-events:auto}
+
+/* ---------- race ---------- */
+#raceArea{flex:1;min-width:0;min-height:0;display:none;flex-direction:column;gap:10px;overflow:auto;padding-right:2px;-webkit-overflow-scrolling:touch}
+#raceGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:10px}
+.rcard{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:11px;position:relative;overflow:hidden;transition:.2s}
+.rcard.winner{border-color:rgba(251,191,36,.5);box-shadow:0 0 26px -10px rgba(251,191,36,.75)}
+.rcard header{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.rcard h3{font-size:12.5px;font-weight:600;letter-spacing:-.01em}
+.rcard .badge{
+  margin-left:auto;font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;
+  padding:3px 8px;border-radius:99px;border:1px solid var(--line);color:var(--dim2);
+}
+.rcard .badge.run{color:#67e8f9;border-color:rgba(34,211,238,.35);background:rgba(34,211,238,.09)}
+.rcard .badge.ok{color:#fbbf24;border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.1)}
+.rcard .badge.bad{color:#fb7185;border-color:rgba(244,63,94,.35);background:rgba(244,63,94,.1)}
+.rcard canvas{display:block;width:100%;border-radius:8px;background:#0a0d13;image-rendering:pixelated}
+.rstats{display:flex;gap:14px;margin-top:9px;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:10.5px;color:var(--dim2)}
+.rstats b{color:var(--text);font-weight:600}
+.rbar{height:2px;border-radius:2px;background:rgba(255,255,255,.07);margin-top:8px;overflow:hidden}
+.rbar span{display:block;height:100%;width:0;background:linear-gradient(90deg,#818cf8,#22d3ee);transition:width .12s linear}
+
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.11);border-radius:99px;border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.2);background-clip:padding-box}
+
+/* =========================================================
+   Tablet — 720 to 1023px. Two columns, narrower panel.
+   ========================================================= */
+@media (max-width:1023px){
+  #app{padding:10px;gap:10px}
+  aside{width:280px}
+  .brand small{display:none}
+  .algogroup > .glabel{width:auto;text-align:left}
+  .ctl .note{max-width:210px;min-height:0}
+  input[type=range]{width:104px}
+  .legend{gap:9px;font-size:10px}
+}
+
+/* =========================================================
+   Phone — under 720px. Single column, world first, two sheets.
+   ========================================================= */
+@media (max-width:719px){
+  /* No bottom padding: the bar is flush with the viewport edge so nothing of the
+     panel sheet can show underneath it. */
+  #app{padding:8px 8px 0;gap:8px}
+
+  header{gap:8px;padding-top:var(--safeT);flex-wrap:nowrap;overflow:hidden}
+  .brand{display:none}
+  #modeRace .wide{display:none}
+  #modeRace .narrow{display:inline}
+  #worldTabs,#modeTabs{flex:0 1 auto;min-width:0}
+
+  /* One horizontally scroll-snapped strip. display:contents flattens the two
+     group rows into it, so the labels read as inline dividers. */
+  #algoTabs{
+    flex-direction:row;flex-wrap:nowrap;gap:6px;align-items:center;
+    overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);
+            mask-image:linear-gradient(90deg,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);
+  }
+  #algoTabs::-webkit-scrollbar{display:none}
+  .algogroup,.pillrow{display:contents}
+  .algogroup > .glabel{
+    width:auto;text-align:left;flex:0 0 auto;align-self:center;white-space:nowrap;
+    padding:0 2px 0 8px;border-left:1px solid var(--line2);line-height:2.4;
+  }
+  .pill{flex:0 0 auto;scroll-snap-align:center}
+
+  main{padding-bottom:var(--collapsedH)}
+  #worldHost{border-radius:14px}
+
+  /* Panel as a bottom sheet, collapsed to the stat row, sitting above the bar. */
+  #panel{
+    position:fixed;left:0;right:0;bottom:var(--barH);z-index:40;
+    width:auto;height:min(74dvh,600px);gap:8px;
+    padding:0 10px 12px;
+    background:var(--bg2);border-top:1px solid var(--line2);
+    border-radius:18px 18px 0 0;
+    box-shadow:0 -20px 44px -22px rgba(0,0,0,.95);
+    transform:translateY(calc(100% - var(--collapsedH)));
+    transition:transform .3s cubic-bezier(.2,.8,.2,1);
+  }
+  body.panel-open #panel{transform:translateY(0)}
+  body.panel-dragging #panel{transition:none}
+
+  #panelHandle{
+    display:flex;align-items:center;justify-content:center;flex:none;
+    border:0;background:transparent;cursor:grab;touch-action:none;
+  }
+  #panelHandle span{display:block;width:44px;height:5px;border-radius:99px;background:var(--line2)}
+  #panelHandle:active{cursor:grabbing}
+
+  /* The collapsed strip is the stat row, so it becomes one scrollable line. */
+  .stats{
+    display:flex;overflow-x:auto;overflow-y:hidden;gap:1px;border-radius:12px;
+    scrollbar-width:none;
+  }
+  .stats::-webkit-scrollbar{display:none}
+  .stat{flex:0 0 auto;min-width:104px;padding:8px 11px}
+  .stat b{font-size:16px}
+
+  #algoCard{flex:none}
+  .tabbed{min-height:190px}
+
+  /* Full-bleed, opaque and above the panel sheet, so the sheet's overflow tucks
+     behind it instead of covering the transport. */
+  footer{
+    position:relative;z-index:45;margin:0 -8px;
+    background:var(--bg2);border-left:0;border-right:0;border-bottom:0;
+    border-radius:14px 14px 0 0;
+    padding:9px 14px calc(9px + var(--safeB));gap:8px;
+  }
+  #transport{width:100%;gap:8px}
+  #btnPlay{flex:1 1 auto}
+  #btnStep,#btnReset,#btnOptions{flex:0 0 auto}
+  #btnStep .lbl,#btnReset .lbl{display:none}
+  #speedWrap{width:100%;gap:8px}
+  #speedWrap input[type=range]{flex:1;width:auto}
+  .legend,.hint{display:none}
+
+  #raceGrid{grid-template-columns:1fr}
+}
+
+/* =========================================================
+   Touch. `body.touch` is set by js/ui/app.js from the pointer type, the
+   touch-point count and the viewport width, rather than from a media query
+   alone, so a hybrid laptop and an iPad in landscape both get it. It is on by
+   default in the markup and removed for a wide fine-pointer desktop, so the
+   worst case if scripting stalls is the finger-friendly size.
+
+   Two things hang off it: 44x44 hit targets, and the Options sheet.
+   ========================================================= */
+body.touch #btnOptions{display:inline-flex}
+body.touch #optionsGroup{
+  display:flex;flex-direction:column;align-items:stretch;gap:16px;
+  position:fixed;left:0;right:0;bottom:0;z-index:60;
+  max-height:82dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:0 16px calc(20px + var(--safeB));
+  background:var(--bg2);border-top:1px solid var(--line2);
+  border-radius:18px 18px 0 0;
+  box-shadow:0 -20px 44px -22px rgba(0,0,0,.95);
+  /* A fixed nudge past 100% so no sliver can peek, plus visibility so the sheet
+     is out of the tab order while it is closed. */
+  transform:translateY(calc(100% + 32px));
+  visibility:hidden;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1), visibility 0s linear .28s;
+}
+body.touch.opts-open #optionsGroup{
+  transform:translateY(0);
+  visibility:visible;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1), visibility 0s;
+}
+body.touch #optionsGroup .divider{display:none}
+body.touch .sheetHead{
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--bg2);z-index:2;
+  padding:14px 0 10px;border-bottom:1px solid var(--line);
+}
+body.touch .sheetHead b{font-size:14px;font-weight:650}
+body.touch #optionsGroup .ctl{width:100%}
+body.touch #optionsGroup .ctl.stack{gap:8px}
+body.touch #optionsGroup .ctl.stack .row{width:100%;justify-content:space-between}
+body.touch #optionsGroup .ctl label{font-size:11px}
+body.touch #optionsGroup .ctl .note{max-width:none;min-height:0;font-size:11px;line-height:1.45}
+body.touch #optionsGroup #limitWrap,body.touch #optionsGroup #presetWrap{justify-content:space-between}
+body.touch #optionsGroup #limitWrap input[type=range]{flex:1;width:auto;margin:0 10px}
+body.touch #optionsGroup select{max-width:none;flex:1}
+body.touch #terrainWrap{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+body.touch #showGWrap{width:100%;max-width:340px}
+body.touch #showGWrap .switch{width:100%;justify-content:space-between;flex-direction:row-reverse}
+body.touch .legend{display:none}
+
+body.touch .btn{min-height:44px;padding:10px 16px;font-size:13px}
+body.touch .btn svg{width:15px;height:15px}
+body.touch .seg{padding:4px}
+body.touch .seg button{min-height:44px;padding:0 16px;font-size:13px;display:inline-flex;align-items:center}
+body.touch .seg.sm button{min-height:44px;padding:0 14px;font-size:12.5px}
+body.touch .pill{min-height:44px;display:inline-flex;align-items:center;padding:0 16px}
+body.touch .tabbar{gap:4px;padding:6px 6px 0}
+body.touch .tabbar button{min-height:44px;padding:0 14px;font-size:12.5px;display:inline-flex;align-items:center}
+body.touch select{min-height:44px;padding:0 12px;font-size:13px}
+body.touch input[type=range]{height:44px}
+body.touch input[type=range]::-webkit-slider-thumb{width:22px;height:22px}
+body.touch input[type=range]::-moz-range-thumb{width:22px;height:22px}
+body.touch .switch{min-height:44px;align-items:center}
+body.touch .switch .track{width:46px;height:28px}
+body.touch .switch .track::after{width:22px;height:22px;top:3px;left:3px}
+body.touch .switch input:checked + .track::after{transform:translateX(18px)}
+body.touch #panelHandle{min-height:44px;height:44px}
+body.touch .divider{height:32px}
+body.touch .frow{padding:8px 7px;font-size:12px}
+body.touch .lrow{padding:6px 6px}
+body.touch .ctl output{min-width:52px}
+
+/* =========================================================
+   Reduced motion — state changes become instant.
+   ========================================================= */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+}

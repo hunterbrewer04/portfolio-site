@@ -1,6 +1,10 @@
 import { ArrowUpRight, Github } from "lucide-react";
 import { ScrollFadeIn } from "@/components/motion/scroll-fade-in";
 import { NavPill } from "@/components/shared/nav-pill";
+import { ProjectFacts } from "@/components/work/project-facts";
+import { TechStack } from "@/components/work/tech-stack";
+import type { ProjectStat } from "@/lib/projects";
+
 export interface ProjectMeta {
   title: string;
   description: string;
@@ -8,6 +12,10 @@ export interface ProjectMeta {
   github?: string;
   demo?: string;
   date: string;
+  status?: string;
+  role?: string;
+  timeline?: string;
+  stats: ProjectStat[];
 }
 
 interface ProjectHeroProps {
@@ -43,6 +51,9 @@ export function ProjectHero({ meta, color }: ProjectHeroProps) {
           <p className="max-w-2xl text-lg leading-relaxed text-neutral-300">
             {meta.description}
           </p>
+          {meta.tags.length > 0 && (
+            <TechStack tags={meta.tags} color={color} className="max-w-2xl justify-center" />
+          )}
           {(meta.github || meta.demo) && (
             <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
               {meta.github && (
@@ -71,6 +82,14 @@ export function ProjectHero({ meta, color }: ProjectHeroProps) {
             </div>
           )}
         </ScrollFadeIn>
+        <ProjectFacts
+          year={year}
+          status={meta.status}
+          role={meta.role}
+          timeline={meta.timeline}
+          stats={meta.stats}
+          color={color}
+        />
       </div>
     </header>
   );

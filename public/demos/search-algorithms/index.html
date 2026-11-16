@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Search Algorithm Visualizer</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/grid.css">
+<link rel="stylesheet" href="css/graph.css">
+<link rel="stylesheet" href="css/tree.css">
+</head>
+<body class="touch">
+<div id="app">
+
+  <header>
+    <div class="brand">
+      <h1>Search Algorithms</h1>
+      <small>Uninformed and informed search, one step at a time</small>
+    </div>
+    <div class="spacer"></div>
+    <div class="seg" id="worldTabs"></div>
+    <div class="seg" id="modeTabs">
+      <button id="modeExplore" class="on">Explore</button>
+      <button id="modeRace"><span class="wide">Race all eight</span><span class="narrow">Race</span></button>
+    </div>
+  </header>
+
+  <div id="algoTabs"></div>
+
+  <main>
+    <div id="worldHost"></div>
+
+    <div id="raceArea">
+      <div id="raceGrid"></div>
+    </div>
+
+    <!-- On a phone this becomes a bottom sheet, collapsed to the stat row. The stats
+         come first in the markup so the collapsed strip is the numbers. -->
+    <aside id="panel">
+      <button id="panelHandle" aria-label="Expand panel" aria-expanded="false"><span></span></button>
+
+      <div class="stats">
+        <div class="stat s-exp"><b id="stExpanded">0</b><i>Expanded</i></div>
+        <div class="stat s-fro"><b id="stFrontier">0</b><i>Frontier</i></div>
+        <div class="stat"><b id="stPeak">0</b><i>Peak frontier</i></div>
+        <div class="stat s-cost"><b id="stCost">—</b><i>Path cost</i></div>
+        <div class="stat"><b id="stLen">—</b><i>Path steps</i></div>
+        <div class="stat"><b id="stStatus">Ready</b><i>Status</i></div>
+      </div>
+
+      <div class="card" id="algoCard">
+        <h2><span class="dot"></span><span id="algoName">A* Search</span></h2>
+        <p id="algoDesc"></p>
+        <dl class="props">
+          <dt>Complete</dt><dd id="pComplete"></dd>
+          <dt>Optimal</dt><dd id="pOptimal"></dd>
+          <dt>Time</dt><dd id="pTime" class="mono"></dd>
+          <dt>Space</dt><dd id="pSpace" class="mono"></dd>
+        </dl>
+      </div>
+
+      <div class="card tabbed">
+        <div class="tabbar">
+          <button id="ptFrontier" class="on">Frontier</button>
+          <button id="ptLog">Trace</button>
+          <button id="ptCode">Pseudocode</button>
+        </div>
+        <div class="pane on" id="paneFrontier">
+          <div id="frontierHead"></div>
+          <div id="frontierList"></div>
+        </div>
+        <div class="pane" id="paneLog"><div id="logList"></div></div>
+        <div class="pane" id="paneCode"><pre id="codeBlock"></pre></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer id="bar">
+    <!-- Transport. On a phone this row plus the speed slider is all that stays on screen. -->
+    <div class="grp" id="transport">
+      <button class="btn primary" id="btnPlay">
+        <svg id="icPlay" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>
+        <span id="playLbl">Play</span>
+      </button>
+      <button class="btn" id="btnStep">
+        <svg viewBox="0 0 24 24"><path d="M5 4l10 8-10 8zM17 4h3v16h-3z"/></svg><span class="lbl">Step</span>
+      </button>
+      <button class="btn ghost" id="btnReset">
+        <svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg><span class="lbl">Reset</span>
+      </button>
+      <button class="btn ghost" id="btnOptions">
+        <svg viewBox="0 0 24 24"><path d="M3 7h18M3 17h18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="9" cy="7" r="2.6" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="16" cy="17" r="2.6" fill="none" stroke="currentColor" stroke-width="2.4"/></svg><span class="lbl">Options</span>
+      </button>
+    </div>
+
+    <div class="ctl" id="speedWrap">
+      <label for="speed">Speed</label>
+      <input type="range" id="speed" min="0" max="100" value="70">
+      <output id="speedVal"></output>
+    </div>
+
+    <!-- Inline in the footer on desktop and tablet (display:contents), and the contents
+         of the Options sheet on a phone. -->
+    <div id="optionsGroup">
+      <div class="sheetHead">
+        <b>Options</b>
+        <button class="btn ghost" id="btnOptionsClose">Done</button>
+      </div>
+
+      <div class="divider" id="limitDiv"></div>
+      <div class="ctl" id="limitWrap">
+        <label for="limit">Depth&nbsp;limit</label>
+        <input type="range" id="limit" min="2" max="220" value="12">
+        <output id="limitVal">12</output>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="ctl stack">
+        <div class="row">
+          <label>Test&nbsp;goal</label>
+          <div class="seg sm" id="swGoalTest">
+            <button data-v="pop" class="on" title="Goal is checked when a node is popped off the frontier. This is the textbook rule and keeps UCS and A* optimal.">on pop</button>
+            <button data-v="gen" title="Goal is checked the instant a node is generated. Finishes sooner, but UCS and A* stop being optimal.">on generation</button>
+          </div>
+        </div>
+        <small class="note" id="goalTestNote"></small>
+      </div>
+
+      <div class="ctl stack">
+        <div class="row">
+          <label>Search</label>
+          <div class="seg sm" id="swSearchMode">
+            <button data-v="graph" class="on" title="Graph search: an explored set means every state is expanded at most once.">graph</button>
+            <button data-v="tree" title="Tree search: no explored set, so one state can appear many times on different paths. Only cycles on the current path are blocked.">tree</button>
+          </div>
+        </div>
+        <small class="note" id="searchModeNote"></small>
+      </div>
+
+      <div class="divider" id="presetDiv"></div>
+      <div class="ctl" id="presetWrap">
+        <label for="presetSelect">Graph</label>
+        <select id="presetSelect"></select>
+      </div>
+
+      <div class="divider" id="terrainDiv"></div>
+      <div class="grp" id="terrainWrap">
+        <button class="btn ghost" id="btnMaze">Maze</button>
+        <button class="btn ghost" id="btnWalls">Random walls</button>
+        <button class="btn ghost" id="btnWeights">Terrain</button>
+        <button class="btn ghost" id="btnClear">Clear</button>
+      </div>
+
+      <div class="divider" id="showGDiv"></div>
+      <div class="grp" id="showGWrap">
+        <label class="switch"><input type="checkbox" id="tglCosts"><span class="track"></span>Show g</label>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+    <div class="legend">
+      <span><i style="background:var(--start)"></i>Start</span>
+      <span><i style="background:var(--goal)"></i>Goal</span>
+      <span><i style="background:var(--frontier)"></i>Frontier</span>
+      <span><i style="background:#6f74c9"></i>Expanded</span>
+      <span><i style="background:var(--path)"></i>Path</span>
+      <span><i style="background:var(--wall);box-shadow:0 0 0 1px var(--line2) inset"></i>Wall</span>
+      <span><i style="background:var(--heavy);box-shadow:0 0 0 1px rgba(251,191,36,.45) inset"></i>Cost 5</span>
+    </div>
+  </footer>
+
+  <div class="hint" id="hint"></div>
+</div>
+
+<div id="scrim"></div>
+
+<script src="js/core/util.js"></script>
+<script src="js/core/grid-model.js"></script>
+<script src="js/core/problem.js"></script>
+<script src="js/core/algorithms.js"></script>
+<script src="js/core/algorithms-extra.js"></script>
+<script src="js/data/presets.js"></script>
+<script src="js/worlds/grid.js"></script>
+<script src="js/worlds/graph.js"></script>
+<script src="js/worlds/tree.js"></script>
+<script src="js/ui/panels.js"></script>
+<script src="js/ui/app.js"></script>
+</body>
+</html>

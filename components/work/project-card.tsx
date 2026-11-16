@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { ArrowUpRight, Github, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/lib/projects";
+import { TechStack } from "@/components/work/tech-stack";
 
 export interface ProjectCardProps {
   project: Omit<Project, "content">;
@@ -35,8 +36,21 @@ export function ProjectCard({
   onToggle,
   particleCount = 16,
 }: ProjectCardProps) {
-  const { title, description, tagline, summary, highlights, github, demo, slug, color, year } =
-    project;
+  const {
+    title,
+    description,
+    tagline,
+    summary,
+    highlights,
+    github,
+    demo,
+    slug,
+    color,
+    year,
+    tags,
+    cover,
+    coverAlt,
+  } = project;
   const hero = variant === "hero";
   const featured = hero || variant === "featured";
   const reduce = useReducedMotion();
@@ -240,6 +254,18 @@ export function ProjectCard({
             className="flex flex-col items-center gap-5 border-t pt-5"
             style={{ borderColor: `${color}33` }}
           >
+            {cover && (
+              // eslint-disable-next-line @next/next/no-img-element -- static export, no next/image
+              <img
+                src={cover}
+                alt={coverAlt ?? `${title} screenshot`}
+                loading="lazy"
+                className={cn(
+                  "h-auto w-full rounded-lg border border-white/[0.08]",
+                  hero ? "max-w-xl" : "max-w-md",
+                )}
+              />
+            )}
             {panelText && (
               <p className={cn("text-sm leading-relaxed text-neutral-300", hero ? "max-w-xl" : "max-w-md")}>
                 {panelText}
@@ -263,6 +289,9 @@ export function ProjectCard({
                   </li>
                 ))}
               </ul>
+            )}
+            {tags.length > 0 && (
+              <TechStack tags={tags} color={color} max={5} size="sm" className="justify-center" />
             )}
             <div className="flex flex-wrap justify-center gap-2">
               <Link

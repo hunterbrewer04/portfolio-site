@@ -1,0 +1,37 @@
+---
+title: "Rummy Tracker"
+description: "A native iOS scorekeeper for two-player rummy: log each hand, see the race to the target score, and keep a head-to-head record over every game you've played."
+tagline: "A native iOS scorekeeper for two-player rummy nights."
+summary: "A SwiftUI and SwiftData app for keeping score in two-player rummy. Each hand's points go in, running totals race toward the target, and a stats screen keeps the head-to-head record, streaks, and margins. All of the scoring rules live in one pure engine with no UI or database code, covered by Swift Testing."
+highlights:
+  - "Log each hand and watch both players race toward the target score"
+  - "Head-to-head record, win streaks, and margins across every finished game"
+  - "All scoring rules in one pure, unit-tested engine, separate from the UI"
+date: 2026-06-13
+timeline: "Jun 2026"
+stats:
+  - { label: "Tests", value: "23" }
+  - { label: "Platform", value: "iOS 17+" }
+tags: ["Swift", "SwiftUI", "SwiftData", "iOS", "Swift Testing", "XcodeGen"]
+github: "https://github.com/hunterbrewer04/rummy-app"
+featured: false
+color: "#5b8cff"
+draft: false
+---
+
+Rummy Tracker replaces the paper score sheet for two-player rummy. Start a game with two names and a target score, add each hand's points as you go, and the app keeps the running totals, calls the winner, and remembers every game you've finished for the stats screen.
+
+## What it does
+
+- **Hand-by-hand scoring.** Enter both players' points for each hand, negatives included. Any hand can be edited later.
+- **The race to the target.** Each player's running total and a progress bar toward the target score stay on screen.
+- **A clear finish.** The moment someone wins, the game records the winner, with a haptic tap and confetti.
+- **Stats that settle arguments.** A head-to-head record for the matchup, win percentage, longest winning streak, average margin, and best score.
+
+## Decisions worth knowing
+
+- **One file holds every rule.** Scoring lives in a small engine with no SwiftUI or SwiftData in it. If both players pass the target on the same hand, the higher total wins, and an exact tie plays another hand. Changing the rules means touching one file.
+- **The winner is recorded once.** A game snapshots its winner the first time it is decided, so editing an earlier hand later doesn't silently rewrite history. A finished game can be reopened on purpose to fix a mistake.
+- **Stats are pure functions.** Finished games are reduced to plain values before any stats are computed, so streaks and head-to-head records are tested without a database.
+- **Tested with Swift Testing.** 23 tests cover the scoring rules, game finishing, and the stats engine.
+- **The Xcode project is generated** from a short XcodeGen spec, so the project file never causes merge conflicts.

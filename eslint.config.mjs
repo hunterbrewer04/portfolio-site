@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored static builds of other repos (see scripts/sync-*.sh).
+    "public/demos/**",
   ]),
 ]);
 
