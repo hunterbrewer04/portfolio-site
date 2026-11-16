@@ -1,1 +1,1 @@
-Vendored from github.com/hunterbrewer04/Search-Algorithms-Demos @ 8454eee. Refresh with scripts/sync-search-demo.sh; don't edit here.
+Vendored from github.com/hunterbrewer04/Search-Algorithms-Demos @ f7e7773. Refresh with scripts/sync-search-demo.sh; don't edit here.
